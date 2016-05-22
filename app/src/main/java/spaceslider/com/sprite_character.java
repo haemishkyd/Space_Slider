@@ -9,9 +9,10 @@ public class sprite_character
 {
     Random rn;
     /* Sprite position and path */
-    int gradient;
     public int x;
+    public int current_line;
     public int y;
+    public boolean DrawState;
     /* Sprite Size */
     public int width;
     public int height;
@@ -20,7 +21,7 @@ public class sprite_character
     GameView myView;
     int [] presetStartX;
 
-    public sprite_character(GameView passedView, int mostleft, int mosttop, int sizewidth, int sizeheight, int initalx, int initaly)
+    public sprite_character(GameView passedView, int mostleft, int mosttop, int sizewidth, int sizeheight, int initalx, int initaly, boolean draw_state)
     {
         int temp_value;
         startX = mostleft;
@@ -36,6 +37,8 @@ public class sprite_character
         presetStartX[4] = 1000;
         presetStartX[5] = 1200;
         presetStartX[6] = 1400;
+
+        DrawState = draw_state;
 
         myView = passedView;
         x=initalx;
@@ -57,12 +60,17 @@ public class sprite_character
     public void resetRock(int position)
     {
         y = 0;
+        current_line = 0;
         x = presetStartX[position];
     }
 
     public void updateRock(Canvas canvas)
     {
-        y += 20;
+        if (DrawState == true)
+        {
+            current_line++;
+            y = current_line*80;
+        }
     }
 
     public void drawRock(Canvas canvas, Bitmap bmp)
