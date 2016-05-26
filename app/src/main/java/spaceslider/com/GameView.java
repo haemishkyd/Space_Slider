@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 
@@ -14,13 +15,16 @@ import android.view.SurfaceHolder;
  */
 public class GameView extends SurfaceView
 {
-    private Bitmap bmp;
     private Bitmap spaceship_normal;
     private Bitmap spaceship_col_1;
     private Bitmap spaceship_col_2;
     private Bitmap spaceship_col_3;
     private Bitmap spaceship_col_4;
     private Bitmap spaceship_col_5;
+    private Bitmap rock_1;
+    private Bitmap rock_2;
+    private Bitmap right_arrow;
+    private Bitmap left_arrow;
 
     private SurfaceHolder holder;
     private GameLoopThread gameLoopThread;
@@ -35,6 +39,7 @@ public class GameView extends SurfaceView
 
     /* Game characters */
     public static final int NUMBER_OF_ROCKS = 8;
+    public static final int PIXELS_PER_LINE = 80;
     public sprite_character rockarray[];
     public sprite_character ship_character;
     public sprite_character ship_collission_1;
@@ -42,6 +47,8 @@ public class GameView extends SurfaceView
     public sprite_character ship_collission_3;
     public sprite_character ship_collission_4;
     public sprite_character ship_collission_5;
+
+
 
     private int   number_of_lives = 3;
     private int   level_of_game = 1;
@@ -60,41 +67,36 @@ public class GameView extends SurfaceView
         gameLoopThread = new GameLoopThread(this);
 
         //create all the characters
-        bmp = BitmapFactory.decodeResource(getResources(), R.drawable.myspaceship);
         spaceship_normal = BitmapFactory.decodeResource(getResources(), R.drawable.kspaceduel_spaceship_128px);
         spaceship_col_1 = BitmapFactory.decodeResource(getResources(), R.drawable.kspaceduel_spaceship_128px_expl_1);
         spaceship_col_2 = BitmapFactory.decodeResource(getResources(), R.drawable.kspaceduel_spaceship_128px_expl_2);
         spaceship_col_3 = BitmapFactory.decodeResource(getResources(), R.drawable.kspaceduel_spaceship_128px_expl_3);
         spaceship_col_4 = BitmapFactory.decodeResource(getResources(), R.drawable.kspaceduel_spaceship_128px_expl_4);
         spaceship_col_5 = BitmapFactory.decodeResource(getResources(), R.drawable.kspaceduel_spaceship_128px_expl_5);
-        //ship_character = new sprite_character(this, bmp.getWidth()/3, ((bmp.getHeight()/8)*2), bmp.getWidth()/3, (bmp.getHeight()/8), 800, 750,true);
-        //ship_collission_1 = new sprite_character(this, 0, (int) (bmp.getHeight()/2.3), bmp.getWidth()/9, bmp.getHeight()/11, 800, 750,true);
-        //ship_collission_2 = new sprite_character(this,bmp.getWidth()/6, (int) (bmp.getHeight()/2.3), bmp.getWidth()/6, (bmp.getHeight()/10), 800, 750,true);
-        //ship_collission_3 = new sprite_character(this,(bmp.getWidth()/6)*2, (int) (bmp.getHeight()/2.3), bmp.getWidth()/4, (bmp.getHeight()/10), 800, 750,true);
-        //ship_collission_4 = new sprite_character(this, (int) ((bmp.getWidth()/6)*3.5), (int) (bmp.getHeight()/2.3), (int) (bmp.getWidth()/2.5), (bmp.getHeight()/8), 800, 750,true);
-        ship_character = new sprite_character(this, 0, 0,spaceship_normal.getWidth(), spaceship_normal.getHeight(), 800, 650,true);
-        ship_collission_1 = new sprite_character(this, 0, 0, spaceship_col_1.getWidth(), spaceship_col_1.getHeight(), 800, 650,true);
-        ship_collission_2 = new sprite_character(this, 0, 0, spaceship_col_2.getWidth(), spaceship_col_2.getHeight(), 800, 650,true);
-        ship_collission_3 = new sprite_character(this, 0, 0, spaceship_col_3.getWidth(), spaceship_col_3.getHeight(), 800, 650,true);
-        ship_collission_4 = new sprite_character(this, 0, 0, spaceship_col_4.getWidth(), spaceship_col_4.getHeight(), 800, 650,true);
-        ship_collission_5 = new sprite_character(this, 0, 0, spaceship_col_5.getWidth(), spaceship_col_5.getHeight(), 800, 650,true);
+        rock_1 = BitmapFactory.decodeResource(getResources(),R.drawable.asteroid_01);
+        rock_2 = BitmapFactory.decodeResource(getResources(),R.drawable.asteroid_02);
+        left_arrow = BitmapFactory.decodeResource(getResources(),R.drawable.left_arrow);
+        right_arrow = BitmapFactory.decodeResource(getResources(),R.drawable.right_arrow);
+
+        ship_character = new sprite_character(this, 800, 650,true,spaceship_normal);
+        ship_collission_1 = new sprite_character(this,800, 650,true,spaceship_col_1);
+        ship_collission_2 = new sprite_character(this, 800, 650,true,spaceship_col_2);
+        ship_collission_3 = new sprite_character(this, 800, 650,true, spaceship_col_3);
+        ship_collission_4 = new sprite_character(this, 800, 650,true, spaceship_col_4);
+        ship_collission_5 = new sprite_character(this, 800, 650,true, spaceship_col_5);
 
         rockarray = new sprite_character[NUMBER_OF_ROCKS];
         for (rock_idx=0;rock_idx<NUMBER_OF_ROCKS;rock_idx++)
         {
             if (rock_idx%2 == 0)
             {
-                rockarray[rock_idx] = new sprite_character(this, 0, (int) (bmp.getHeight() / 1.45), bmp.getWidth() / 2, bmp.getHeight() / 6, 800, 0,false);
+                rockarray[rock_idx] = new sprite_character(this, 800, 0,false, rock_1);
             }
             else
             {
-                rockarray[rock_idx] = new sprite_character(this,0, (int) (bmp.getHeight()/1.16), bmp.getWidth()/2, bmp.getHeight()/6, 800, 0,false);
+                rockarray[rock_idx] = new sprite_character(this, 800, 0,false, rock_2);
             }
         }
-        //rockarray[1] = new sprite_character(this, bmp.getWidth()/2, (int) (bmp.getHeight()/1.4),bmp.getWidth()/3, bmp.getHeight()/7, 800, 0);
-        //rockarray[2] = new sprite_character(this, bmp.getWidth()/2, (int) (bmp.getHeight()/1.1), (int) (bmp.getWidth()/3.5), bmp.getHeight()/7, 800, 0);
-        //rockarray[3] = new sprite_character(this,0, (int) (bmp.getHeight()/1.16), bmp.getWidth()/2, bmp.getHeight()/6, 800, 0);
-        //rockarray[4] = new sprite_character(this,0, (int) (bmp.getHeight()/1.45), bmp.getWidth()/2, bmp.getHeight()/6, 800, 0);
 
         holder = getHolder();
         holder.addCallback(new SurfaceHolder.Callback()
@@ -148,7 +150,7 @@ public class GameView extends SurfaceView
         {
             if (((rockarray[rock_idx].x+rockarray[rock_idx].width)>shipx) &&  (rockarray[rock_idx].x < (shipx+shipwidth)))
             {
-                if ((rockarray[rock_idx].y+rockarray[rock_idx].height)>shipy)
+                if (((rockarray[rock_idx].y+rockarray[rock_idx].height)>shipy) && (rockarray[rock_idx].y < (shipy+(ship_character.height*0.6))))
                 {
                     gameLoopThread.setCollission(true);
                     number_of_lives--;
@@ -190,20 +192,26 @@ public class GameView extends SurfaceView
         canvas.drawColor(Color.BLACK);
 
         //Get the control area
-        controlLeftTop = 0;
+        controlLeftTop = canvas.getHeight()/2;
         controlLeftLeft = 0;
         controlLeftBottom = canvas.getHeight();
         controlLeftRight = 200;
-        controlRightTop = 0;
+        controlRightTop = canvas.getHeight()/2;
         controlRightLeft = canvas.getWidth() - 200;
         controlRightBottom = canvas.getHeight();
         controlRightRight = canvas.getWidth();
         //draw the control rectangles
         Paint myPaint = new Paint();
-        myPaint.setColor(Color.rgb(127, 127, 0));
-        myPaint.setStrokeWidth(10);
-        canvas.drawRect(controlLeftLeft, controlLeftTop, controlLeftRight, controlLeftBottom, myPaint);
-        canvas.drawRect(controlRightLeft, controlRightTop, controlRightRight, controlRightBottom, myPaint);
+        //myPaint.setColor(Color.rgb(127, 127, 0));
+        //myPaint.setStrokeWidth(10);
+        //canvas.drawRect(controlLeftLeft, controlLeftTop, controlLeftRight, controlLeftBottom, myPaint);
+        //canvas.drawRect(controlRightLeft, controlRightTop, controlRightRight, controlRightBottom, myPaint);
+        Rect src = new Rect(0, 0, right_arrow.getWidth(), right_arrow.getHeight());
+        Rect dst = new Rect((int)controlRightLeft, (int)controlRightTop, right_arrow.getWidth()/5, right_arrow.getHeight()/2);
+        canvas.drawBitmap(right_arrow,src,dst,null);
+        //src = new Rect(0, 0, left_arrow.getWidth(), left_arrow.getHeight());
+        //dst = new Rect((int)controlLeftLeft, (int)controlLeftTop, left_arrow.getWidth()/5, left_arrow.getHeight()/2);
+        //canvas.drawBitmap(left_arrow,src,dst,null);
 
         /* Write the number of lives on the screen*/
         myPaint.setColor(Color.WHITE);
@@ -223,12 +231,12 @@ public class GameView extends SurfaceView
         /* Draw the actual characters */
         if (gameLoopThread.getCollission() == false)
         {
-            ship_character.drawShip(canvas, spaceship_normal);
+            ship_character.drawShip(canvas, ship_character.sourceImage);
             for (rock_idx=0;rock_idx<NUMBER_OF_ROCKS;rock_idx++)
             {
                 if (rockarray[rock_idx].DrawState == true)
                 {
-                    rockarray[rock_idx].drawRock(canvas, bmp);
+                    rockarray[rock_idx].drawRock(canvas, rockarray[rock_idx].sourceImage);
                 }
             }
             collision_draw = 0;
@@ -240,35 +248,35 @@ public class GameView extends SurfaceView
                 case 0:
                     ship_collission_1.x=ship_character.x;
                     ship_collission_1.y=ship_character.y;
-                    ship_collission_1.drawShip(canvas, spaceship_col_1);
+                    ship_collission_1.drawShip(canvas, ship_collission_1.sourceImage);
                     collision_draw = 1;
                     break;
                 case 1:
                     ship_collission_2.x=ship_character.x;
                     ship_collission_2.y=ship_character.y;
-                    ship_collission_2.drawShip(canvas,spaceship_col_2);
+                    ship_collission_2.drawShip(canvas,ship_collission_2.sourceImage);
                     collision_draw = 2;
                     break;
                 case 2:
                     ship_collission_3.x=ship_character.x;
                     ship_collission_3.y=ship_character.y;
-                    ship_collission_3.drawShip(canvas,spaceship_col_3);
+                    ship_collission_3.drawShip(canvas,ship_collission_3.sourceImage);
                     collision_draw = 3;
                     break;
                 case 3:
                     ship_collission_4.x=ship_character.x;
                     ship_collission_4.y=ship_character.y;
-                    ship_collission_4.drawShip(canvas,spaceship_col_4);
+                    ship_collission_4.drawShip(canvas,ship_collission_4.sourceImage);
                     collision_draw = 4;
                     break;
                 case 4:
                     ship_collission_5.x=ship_character.x;
                     ship_collission_5.y=ship_character.y;
-                    ship_collission_5.drawShip(canvas,spaceship_col_5);
+                    ship_collission_5.drawShip(canvas,ship_collission_5.sourceImage);
                     collision_draw = 5;
                     break;
                 case 5:
-                    ship_character.drawShip(canvas, spaceship_normal);
+                    ship_character.drawShip(canvas, ship_character.sourceImage);
                     break;
             }
         }

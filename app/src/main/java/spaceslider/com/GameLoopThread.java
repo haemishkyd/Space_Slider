@@ -7,17 +7,24 @@ import java.util.Random;
 
 public class GameLoopThread extends Thread
 {
-    static final long FPS = 2;
-    static final int COLLISION_DELAY = 20;
+    private static final long FPS = 2;
+    private static final int COLLISION_DELAY = 20;
+    private static int CurrentRockXPosition = 800;
     private GameView view;
     private boolean running = false;
     private boolean collission = false;
     private int collission_counter = 50;
+    private Random rnd;
+    private int counted_spaces_between_rocks = 0;
+
+    /* Stage information */
     private int rocks_per_line = 2;
+    private int spaces_between_rocks = 4;
 
     public GameLoopThread(GameView view)
     {
         this.view = view;
+        rnd = new Random();
     }
 
     public void setRunning(boolean run)
@@ -37,32 +44,36 @@ public class GameLoopThread extends Thread
         return collission;
     }
 
-    private void control_rock_reset(sprite_character rock_to_reset)
+    private void rock_control(Canvas c)
     {
-        Random l_rn;
-        int x_pos;
         int rock_idx;
-        boolean exit=true;
+        int max_lines=c.getHeight()/view.PIXELS_PER_LINE;
+        int counted_rocks_per_line = 0;
+        int useable_screen_width = c.getWidth();
 
-        l_rn=new Random();
-
-        do
+        if (counted_spaces_between_rocks == 0)
         {
-            exit = true;
-            x_pos = l_rn.nextInt(7);
+        /* Initialise all the rocks to their first positions */
             for (rock_idx = 0; rock_idx < view.NUMBER_OF_ROCKS; rock_idx++)
             {
-                if ((view.rockarray[rock_idx].current_line == 0) && (view.rockarray[rock_idx].DrawState == true))
+                if (view.rockarray[rock_idx].DrawState == false)
                 {
-                    if (view.rockarray[rock_idx].x == view.rockarray[rock_idx].presetStartX[x_pos])
+                    view.rockarray[rock_idx].x = CurrentRockXPosition;
+                    view.rockarray[rock_idx].DrawState = true;
+                    CurrentRockXPosition = rnd.nextInt(useable_screen_width-800)+400;
+                    counted_rocks_per_line++;
+                    if (counted_rocks_per_line >= rocks_per_line)
                     {
-                        exit = false;
+                        break;
                     }
                 }
             }
-        } while (exit == false);
-
-        rock_to_reset.resetRock(x_pos);
+        }
+        counted_spaces_between_rocks++;
+        if (counted_spaces_between_rocks >= spaces_between_rocks)
+        {
+            counted_spaces_between_rocks = 0;
+        }
     }
 
     @Override
@@ -75,12 +86,6 @@ public class GameLoopThread extends Thread
         int rock_idx;
         int line_idx;
 
-        /* Initialise all the rocks to their first positions */
-        for (rock_idx=0;rock_idx<view.NUMBER_OF_ROCKS;rock_idx++)
-        {
-            control_rock_reset(view.rockarray[rock_idx]);
-        }
-
         while (running)
         {
             startTime = System.currentTimeMillis();
@@ -91,50 +96,20 @@ public class GameLoopThread extends Thread
                 c = view.getHolder().lockCanvas();
                 synchronized (view.getHolder())
                 {
-                    int max_lines=c.getHeight()/20;
-                    int rocks_on_lines_array[];
-
-                    rocks_on_lines_array = new int[max_lines+1];
-
-                    /* Where are all the rocks */
-                    for (rock_idx=0;rock_idx<view.NUMBER_OF_ROCKS;rock_idx++)
-                    {
-                        rocks_on_lines_array[view.rockarray[rock_idx].current_line]++;
-                    }
-
-                    int local_counter = 0;
-                    if (rocks_on_lines_array[1] == 0)
-                    {
-                        for (rock_idx=0;rock_idx<view.NUMBER_OF_ROCKS;rock_idx++)
-                        {
-                            if (view.rockarray[rock_idx].DrawState == false)
-                            {
-                                view.rockarray[rock_idx].DrawState = true;
-                                control_rock_reset(view.rockarray[rock_idx]);
-                                local_counter++;
-                                if (local_counter >= rocks_per_line)
-                                {
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    rock_control(c);
 
                     /* Update all of the characters */
                     for (rock_idx=0;rock_idx<view.NUMBER_OF_ROCKS;rock_idx++)
                     {
+                        if (view.rockarray[rock_idx].y > c.getHeight())
+                        {
+                            view.rockarray[rock_idx].DrawState = false;
+                            view.rockarray[rock_idx].y = 0;
+                            view.rockarray[rock_idx].current_line = 0;
+                        }
                         view.rockarray[rock_idx].updateRock(c);
                     }
                     view.CharacterDraw(c);
-
-                    /* Reset the rock to the top of the screen */
-                    for (rock_idx=0;rock_idx<view.NUMBER_OF_ROCKS;rock_idx++)
-                    {
-                        if (view.rockarray[rock_idx].y > c.getHeight())
-                        {
-                            control_rock_reset(view.rockarray[rock_idx]);
-                        }
-                    }
                 }
             }
             finally
@@ -145,7 +120,6 @@ public class GameLoopThread extends Thread
                 }
             }
 
-
             /* Collision is passed to the game loop - we check here */
             if (collission == false)
             {
@@ -155,8 +129,9 @@ public class GameLoopThread extends Thread
             {
                 for (rock_idx=0;rock_idx<view.NUMBER_OF_ROCKS;rock_idx++)
                 {
-                    control_rock_reset(view.rockarray[rock_idx]);
                     view.rockarray[rock_idx].DrawState = false;
+                    view.rockarray[rock_idx].y=0;
+                    view.rockarray[rock_idx].current_line = 0;
                 }
                 collission_counter--;
                 if (collission_counter < 0)

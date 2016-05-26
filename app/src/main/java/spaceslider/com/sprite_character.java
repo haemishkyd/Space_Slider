@@ -13,6 +13,7 @@ public class sprite_character
     public int current_line;
     public int y;
     public boolean DrawState;
+    public Bitmap sourceImage;
     /* Sprite Size */
     public int width;
     public int height;
@@ -21,14 +22,15 @@ public class sprite_character
     GameView myView;
     int [] presetStartX;
 
-    public sprite_character(GameView passedView, int mostleft, int mosttop, int sizewidth, int sizeheight, int initalx, int initaly, boolean draw_state)
+    public sprite_character(GameView passedView, int initalx, int initaly, boolean draw_state, Bitmap passedPic)
     {
         int temp_value;
-        startX = mostleft;
-        startY = mosttop;
-        width = sizewidth;
-        height = sizeheight;
+        startX = 0;
+        startY = 0;
+        width = passedPic.getWidth();
+        height = passedPic.getHeight();
         presetStartX = new int[7];
+        sourceImage = passedPic;
 
         presetStartX[0] = 200;
         presetStartX[1] = 400;
@@ -69,7 +71,7 @@ public class sprite_character
         if (DrawState == true)
         {
             current_line++;
-            y = current_line*80;
+            y = current_line*myView.PIXELS_PER_LINE;
         }
     }
 
