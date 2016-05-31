@@ -49,13 +49,15 @@ public class sprite_character
 
     public void updateShip(int direction)
     {
-        if (direction == myView.RIGHT)
-        {
-            x += 25;
+        if (x<(myView.getWidth()-300)) {
+            if (direction == myView.RIGHT) {
+                x += 25;
+            }
         }
-        if (direction == myView.LEFT)
-        {
-            x -= 25;
+        if (x>300) {
+            if (direction == myView.LEFT) {
+                x -= 25;
+            }
         }
     }
 

@@ -18,6 +18,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.startup);
+    }
+
+    public void gameStartButtonPushed(View view)
+    {
         myGameView = new GameView(this);
         setContentView(myGameView);
     }

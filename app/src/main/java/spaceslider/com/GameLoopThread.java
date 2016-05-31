@@ -7,8 +7,9 @@ import java.util.Random;
 
 public class GameLoopThread extends Thread
 {
-    private static final long FPS = 2;
+    private static final long FPS = 20;
     private static final int COLLISION_DELAY = 20;
+    private static int ROCK_SPEED = 5;
     private static int CurrentRockXPosition = 800;
     private GameView view;
     private boolean running = false;
@@ -19,7 +20,8 @@ public class GameLoopThread extends Thread
 
     /* Stage information */
     private int rocks_per_line = 2;
-    private int spaces_between_rocks = 4;
+    private int spaces_between_rocks = 5;
+    private int rock_speed = 0;
 
     public GameLoopThread(GameView view)
     {
@@ -60,7 +62,7 @@ public class GameLoopThread extends Thread
                 {
                     view.rockarray[rock_idx].x = CurrentRockXPosition;
                     view.rockarray[rock_idx].DrawState = true;
-                    CurrentRockXPosition = rnd.nextInt(useable_screen_width-800)+400;
+                    CurrentRockXPosition = rnd.nextInt(useable_screen_width-600)+300;
                     counted_rocks_per_line++;
                     if (counted_rocks_per_line >= rocks_per_line)
                     {
@@ -96,18 +98,21 @@ public class GameLoopThread extends Thread
                 c = view.getHolder().lockCanvas();
                 synchronized (view.getHolder())
                 {
-                    rock_control(c);
+                    rock_speed++;
+                    if (rock_speed > (ROCK_SPEED-view.game_level)) {
+                        rock_speed = 0;
+                        rock_control(c);
 
-                    /* Update all of the characters */
-                    for (rock_idx=0;rock_idx<view.NUMBER_OF_ROCKS;rock_idx++)
-                    {
-                        if (view.rockarray[rock_idx].y > c.getHeight())
-                        {
-                            view.rockarray[rock_idx].DrawState = false;
-                            view.rockarray[rock_idx].y = 0;
-                            view.rockarray[rock_idx].current_line = 0;
+                        /* Update all of the characters */
+                        for (rock_idx = 0; rock_idx < view.NUMBER_OF_ROCKS; rock_idx++) {
+                            if (view.rockarray[rock_idx].y > c.getHeight()) {
+                                view.updateScore(1);
+                                view.rockarray[rock_idx].DrawState = false;
+                                view.rockarray[rock_idx].y = 0;
+                                view.rockarray[rock_idx].current_line = 0;
+                            }
+                            view.rockarray[rock_idx].updateRock(c);
                         }
-                        view.rockarray[rock_idx].updateRock(c);
                     }
                     view.CharacterDraw(c);
                 }

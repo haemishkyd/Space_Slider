@@ -40,6 +40,7 @@ public class GameView extends SurfaceView
     /* Game characters */
     public static final int NUMBER_OF_ROCKS = 8;
     public static final int PIXELS_PER_LINE = 80;
+    public static final int LEVEL_UP_SCORE = 20;
     public sprite_character rockarray[];
     public sprite_character ship_character;
     public sprite_character ship_collission_1;
@@ -51,7 +52,8 @@ public class GameView extends SurfaceView
 
 
     private int   number_of_lives = 3;
-    private int   level_of_game = 1;
+    private int   score_in_game = 0;
+    public  int   game_level = 1;
     private int collision_draw=0;
 
     public static final int RIGHT = 223;
@@ -78,12 +80,12 @@ public class GameView extends SurfaceView
         left_arrow = BitmapFactory.decodeResource(getResources(),R.drawable.left_arrow);
         right_arrow = BitmapFactory.decodeResource(getResources(),R.drawable.right_arrow);
 
-        ship_character = new sprite_character(this, 800, 650,true,spaceship_normal);
-        ship_collission_1 = new sprite_character(this,800, 650,true,spaceship_col_1);
-        ship_collission_2 = new sprite_character(this, 800, 650,true,spaceship_col_2);
-        ship_collission_3 = new sprite_character(this, 800, 650,true, spaceship_col_3);
-        ship_collission_4 = new sprite_character(this, 800, 650,true, spaceship_col_4);
-        ship_collission_5 = new sprite_character(this, 800, 650,true, spaceship_col_5);
+        ship_character = new sprite_character(this, 800, 800,true,spaceship_normal);
+        ship_collission_1 = new sprite_character(this,800, 800,true,spaceship_col_1);
+        ship_collission_2 = new sprite_character(this, 800, 800,true,spaceship_col_2);
+        ship_collission_3 = new sprite_character(this, 800, 800,true, spaceship_col_3);
+        ship_collission_4 = new sprite_character(this, 800, 800,true, spaceship_col_4);
+        ship_collission_5 = new sprite_character(this, 800, 800,true, spaceship_col_5);
 
         rockarray = new sprite_character[NUMBER_OF_ROCKS];
         for (rock_idx=0;rock_idx<NUMBER_OF_ROCKS;rock_idx++)
@@ -135,6 +137,21 @@ public class GameView extends SurfaceView
 
     }
 
+    public void updateScore(int amount)
+    {
+        score_in_game += amount;
+        if (score_in_game > LEVEL_UP_SCORE)
+        {
+            level_up_func();
+        }
+    }
+
+    public void level_up_func()
+    {
+        score_in_game = 0;
+        game_level++;
+    }
+
     public void checkCollisions()
     {
         int rock_idx;
@@ -154,9 +171,10 @@ public class GameView extends SurfaceView
                 {
                     gameLoopThread.setCollission(true);
                     number_of_lives--;
-                    if (number_of_lives == 0)
-                    {
-                        gameLoopThread.setRunning(false);
+                    if ((number_of_lives == 0)) {
+                        if (number_of_lives == 0) {
+                            gameLoopThread.setRunning(false);
+                        }
                     }
                     return;
                 }
@@ -195,28 +213,28 @@ public class GameView extends SurfaceView
         controlLeftTop = canvas.getHeight()/2;
         controlLeftLeft = 0;
         controlLeftBottom = canvas.getHeight();
-        controlLeftRight = 200;
+        controlLeftRight = 300;
         controlRightTop = canvas.getHeight()/2;
-        controlRightLeft = canvas.getWidth() - 200;
+        controlRightLeft = canvas.getWidth() - 300;
         controlRightBottom = canvas.getHeight();
         controlRightRight = canvas.getWidth();
         //draw the control rectangles
         Paint myPaint = new Paint();
-        //myPaint.setColor(Color.rgb(127, 127, 0));
-        //myPaint.setStrokeWidth(10);
-        //canvas.drawRect(controlLeftLeft, controlLeftTop, controlLeftRight, controlLeftBottom, myPaint);
-        //canvas.drawRect(controlRightLeft, controlRightTop, controlRightRight, controlRightBottom, myPaint);
+        myPaint.setColor(Color.rgb(0, 64, 127));
+        myPaint.setStrokeWidth(10);
+        canvas.drawRect(0, 0, controlRightRight, 90, myPaint);
         Rect src = new Rect(0, 0, right_arrow.getWidth(), right_arrow.getHeight());
-        Rect dst = new Rect((int)controlRightLeft, (int)controlRightTop, right_arrow.getWidth()/5, right_arrow.getHeight()/2);
+        Rect dst = new Rect((int)controlRightLeft, (int)controlRightTop, (int)controlRightRight, (int)controlRightBottom);
         canvas.drawBitmap(right_arrow,src,dst,null);
-        //src = new Rect(0, 0, left_arrow.getWidth(), left_arrow.getHeight());
-        //dst = new Rect((int)controlLeftLeft, (int)controlLeftTop, left_arrow.getWidth()/5, left_arrow.getHeight()/2);
-        //canvas.drawBitmap(left_arrow,src,dst,null);
+        src = new Rect(0, 0, left_arrow.getWidth(), left_arrow.getHeight());
+        dst = new Rect((int)controlLeftLeft, (int)controlLeftTop, (int)controlLeftRight, (int)controlLeftBottom);
+        canvas.drawBitmap(left_arrow,src,dst,null);
 
         /* Write the number of lives on the screen*/
         myPaint.setColor(Color.WHITE);
-        myPaint.setTextSize(100);
-        canvas.drawText(Integer.toString(number_of_lives), 1500, 110, myPaint);
+        myPaint.setTextSize(80);
+        String lives_string = "Ships: "+ Integer.toString(number_of_lives);
+        canvas.drawText(lives_string, canvas.getWidth()-(lives_string.length()*40), 80, myPaint);
         if (number_of_lives == 0)
         {
             myPaint.setColor(Color.RED);
@@ -225,8 +243,9 @@ public class GameView extends SurfaceView
 
         /* Write the number of lives on the screen*/
         myPaint.setColor(Color.GREEN);
-        myPaint.setTextSize(100);
-        canvas.drawText(Integer.toString(level_of_game), 200, 110, myPaint);
+        myPaint.setTextSize(80);
+        lives_string = "Score: "+ Integer.toString(score_in_game);
+        canvas.drawText(lives_string, 10, 80, myPaint);
 
         /* Draw the actual characters */
         if (gameLoopThread.getCollission() == false)
