@@ -10,6 +10,7 @@ public class GameLoopThread extends Thread
     private static final long FPS = 20;
     private static final int COLLISION_DELAY = 20;
     private static int ROCK_SPEED = 5;
+    private static int NUMBER_OF_STARS_PER_LINE = 10;
     private static int CurrentRockXPosition = 800;
     private GameView view;
     private boolean running = false;
@@ -22,6 +23,8 @@ public class GameLoopThread extends Thread
     private int rocks_per_line = 2;
     private int spaces_between_rocks = 5;
     private int rock_speed = 0;
+    /* Star counter */
+    private int star_counter;
 
     public GameLoopThread(GameView view)
     {
@@ -46,6 +49,21 @@ public class GameLoopThread extends Thread
         return collission;
     }
 
+    private void star_control(Canvas c)
+    {
+        int star_idx;
+        for (star_idx = 0; star_idx < view.NUMBER_OF_STARS; star_idx++)
+        {
+            star_counter++;
+            if (star_counter<NUMBER_OF_STARS_PER_LINE) {
+                view.stars[star_idx].display_star = true;
+            }
+            view.stars[star_idx].update_star();
+            view.stars[star_idx].check_star(c);
+        }
+        star_counter = 0;
+    }
+
     private void rock_control(Canvas c)
     {
         int rock_idx;
@@ -55,7 +73,7 @@ public class GameLoopThread extends Thread
 
         if (counted_spaces_between_rocks == 0)
         {
-        /* Initialise all the rocks to their first positions */
+            /* Initialise all the rocks to their first positions */
             for (rock_idx = 0; rock_idx < view.NUMBER_OF_ROCKS; rock_idx++)
             {
                 if (view.rockarray[rock_idx].DrawState == false)

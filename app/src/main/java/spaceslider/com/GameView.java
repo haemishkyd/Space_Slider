@@ -10,6 +10,8 @@ import android.graphics.Rect;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 
+import java.util.Random;
+
 /**
  * Created by haemish on 2016/04/18.
  */
@@ -39,9 +41,11 @@ public class GameView extends SurfaceView
 
     /* Game characters */
     public static final int NUMBER_OF_ROCKS = 8;
+    public static final int NUMBER_OF_STARS = 80;
     public static final int PIXELS_PER_LINE = 80;
     public static final int LEVEL_UP_SCORE = 20;
     public sprite_character rockarray[];
+    public star_formation stars[];
     public sprite_character ship_character;
     public sprite_character ship_collission_1;
     public sprite_character ship_collission_2;
@@ -54,7 +58,7 @@ public class GameView extends SurfaceView
     private int   number_of_lives = 3;
     private int   score_in_game = 0;
     public  int   game_level = 1;
-    private int collision_draw=0;
+    private int   collision_draw=0;
 
     public static final int RIGHT = 223;
     public static final int LEFT = 189;
@@ -99,7 +103,11 @@ public class GameView extends SurfaceView
                 rockarray[rock_idx] = new sprite_character(this, 800, 0,false, rock_2);
             }
         }
-
+        stars = new star_formation[NUMBER_OF_STARS];
+        for (rock_idx=0;rock_idx<NUMBER_OF_STARS;rock_idx++)
+        {
+            stars[rock_idx].initialise_star();
+        }
         holder = getHolder();
         holder.addCallback(new SurfaceHolder.Callback()
         {
@@ -172,9 +180,7 @@ public class GameView extends SurfaceView
                     gameLoopThread.setCollission(true);
                     number_of_lives--;
                     if ((number_of_lives == 0)) {
-                        if (number_of_lives == 0) {
                             gameLoopThread.setRunning(false);
-                        }
                     }
                     return;
                 }
@@ -298,6 +304,39 @@ public class GameView extends SurfaceView
                     ship_character.drawShip(canvas, ship_character.sourceImage);
                     break;
             }
+        }
+    }
+}
+
+class star_formation
+{
+    public int x;
+    public int y;
+    public boolean display_star;
+    Random myRand;
+
+    public star_formation()
+    {
+        myRand = new Random();
+        display_star = false;
+    }
+
+    public void initialise_star(Canvas c)
+    {
+        y = 0;
+        x = myRand.nextInt(c.getWidth());
+    }
+
+    public void update_star()
+    {
+        y=y+80;
+    }
+
+    public void check_star(Canvas c)
+    {
+        if (y>c.getHeight())
+        {
+            display_star = false;
         }
     }
 }
