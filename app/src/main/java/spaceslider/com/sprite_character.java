@@ -47,17 +47,13 @@ public class sprite_character
         y=initaly;
     }
 
-    public void updateShip(int direction)
+    public void updateShip(Canvas canvas,int direction)
     {
-        if (x<(myView.getWidth()-300)) {
-            if (direction == myView.RIGHT) {
+        if ((direction == myView.RIGHT) && ((x+width)<myView.controlRightLeft)) {
                 x += 25;
-            }
         }
-        if (x>300) {
-            if (direction == myView.LEFT) {
+        if ((direction == myView.LEFT) && (x>myView.controlLeftRight)) {
                 x -= 25;
-            }
         }
     }
 

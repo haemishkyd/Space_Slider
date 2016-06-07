@@ -30,20 +30,21 @@ public class GameView extends SurfaceView
 
     private SurfaceHolder holder;
     private GameLoopThread gameLoopThread;
-    private float controlLeftTop;
-    private float controlLeftLeft;
-    private float controlLeftBottom;
-    private float controlLeftRight;
-    private float controlRightTop;
-    private float controlRightLeft;
-    private float controlRightBottom;
-    private float controlRightRight;
+    public  float controlLeftTop;
+    public  float controlLeftLeft;
+    public  float controlLeftBottom;
+    public  float controlLeftRight;
+    public  float controlRightTop;
+    public  float controlRightLeft;
+    public  float controlRightBottom;
+    public  float controlRightRight;
 
     /* Game characters */
     public static final int NUMBER_OF_ROCKS = 8;
     public static final int NUMBER_OF_STARS = 80;
     public static final int PIXELS_PER_LINE = 80;
     public static final int LEVEL_UP_SCORE = 20;
+    public static final int COLLISION_DELAY_COUNT = 4;
     public sprite_character rockarray[];
     public star_formation stars[];
     public sprite_character ship_character;
@@ -53,12 +54,13 @@ public class GameView extends SurfaceView
     public sprite_character ship_collission_4;
     public sprite_character ship_collission_5;
 
-
-
-    private int   number_of_lives = 3;
-    private int   score_in_game = 0;
+    /* Game parameters */
+    public  int   number_of_lives = 3;
+    public  int   score_in_game = 0;
     public  int   game_level = 1;
+
     private int   collision_draw=0;
+    private int   collision_delay = 0;
 
     public static final int RIGHT = 223;
     public static final int LEFT = 189;
@@ -106,7 +108,7 @@ public class GameView extends SurfaceView
         stars = new star_formation[NUMBER_OF_STARS];
         for (rock_idx=0;rock_idx<NUMBER_OF_STARS;rock_idx++)
         {
-            stars[rock_idx].initialise_star();
+            stars[rock_idx] = new star_formation();
         }
         holder = getHolder();
         holder.addCallback(new SurfaceHolder.Callback()
@@ -179,9 +181,6 @@ public class GameView extends SurfaceView
                 {
                     gameLoopThread.setCollission(true);
                     number_of_lives--;
-                    if ((number_of_lives == 0)) {
-                            gameLoopThread.setRunning(false);
-                    }
                     return;
                 }
             }
@@ -192,27 +191,28 @@ public class GameView extends SurfaceView
     {
         if ((xtouch > controlLeftLeft) && (xtouch < controlLeftRight))
         {
-            ship_character.updateShip(LEFT);
-            ship_collission_1.updateShip(LEFT);
-            ship_collission_2.updateShip(LEFT);
-            ship_collission_3.updateShip(LEFT);
-            ship_collission_4.updateShip(LEFT);
-            ship_collission_5.updateShip(LEFT);
+            ship_character.updateShip(gameLoopThread.getCanvas(),LEFT);
+            ship_collission_1.updateShip(gameLoopThread.getCanvas(),LEFT);
+            ship_collission_2.updateShip(gameLoopThread.getCanvas(),LEFT);
+            ship_collission_3.updateShip(gameLoopThread.getCanvas(),LEFT);
+            ship_collission_4.updateShip(gameLoopThread.getCanvas(),LEFT);
+            ship_collission_5.updateShip(gameLoopThread.getCanvas(),LEFT);
         }
         if ((xtouch > controlRightLeft) && (xtouch < controlRightRight))
         {
-            ship_character.updateShip(RIGHT);
-            ship_collission_1.updateShip(RIGHT);
-            ship_collission_2.updateShip(RIGHT);
-            ship_collission_3.updateShip(RIGHT);
-            ship_collission_4.updateShip(RIGHT);
-            ship_collission_5.updateShip(RIGHT);
+            ship_character.updateShip(gameLoopThread.getCanvas(),RIGHT);
+            ship_collission_1.updateShip(gameLoopThread.getCanvas(),RIGHT);
+            ship_collission_2.updateShip(gameLoopThread.getCanvas(),RIGHT);
+            ship_collission_3.updateShip(gameLoopThread.getCanvas(),RIGHT);
+            ship_collission_4.updateShip(gameLoopThread.getCanvas(),RIGHT);
+            ship_collission_5.updateShip(gameLoopThread.getCanvas(),RIGHT);
         }
     }
 
     protected void CharacterDraw(Canvas canvas)
     {
         int rock_idx;
+        int bottom_of_level_ind;
         canvas.drawColor(Color.BLACK);
 
         //Get the control area
@@ -253,6 +253,23 @@ public class GameView extends SurfaceView
         lives_string = "Score: "+ Integer.toString(score_in_game);
         canvas.drawText(lives_string, 10, 80, myPaint);
 
+        for (rock_idx=0;rock_idx<NUMBER_OF_STARS;rock_idx++)
+        {
+            if (stars[rock_idx].display_star)
+            {
+            /* Draw the stars*/
+                myPaint.setColor(Color.WHITE);
+                myPaint.setTextSize(80);
+                lives_string = ".";
+                canvas.drawText(lives_string, stars[rock_idx].x, stars[rock_idx].y, myPaint);
+            }
+        }
+
+        /* Draw the level Rectangle */
+        myPaint.setColor(Color.BLUE);
+        bottom_of_level_ind = canvas.getHeight()/2;
+        canvas.drawRect(0,bottom_of_level_ind-(bottom_of_level_ind/(10-game_level)),300,canvas.getHeight()/2,myPaint);
+
         /* Draw the actual characters */
         if (gameLoopThread.getCollission() == false)
         {
@@ -265,40 +282,62 @@ public class GameView extends SurfaceView
                 }
             }
             collision_draw = 0;
+            collision_delay = 0;
         }
         else
         {
+            collision_delay++;
             switch(collision_draw)
             {
                 case 0:
                     ship_collission_1.x=ship_character.x;
                     ship_collission_1.y=ship_character.y;
                     ship_collission_1.drawShip(canvas, ship_collission_1.sourceImage);
-                    collision_draw = 1;
+                    if (collision_delay >= COLLISION_DELAY_COUNT)
+                    {
+                        collision_draw = 1;
+                        collision_delay = 0;
+                    }
                     break;
                 case 1:
                     ship_collission_2.x=ship_character.x;
                     ship_collission_2.y=ship_character.y;
                     ship_collission_2.drawShip(canvas,ship_collission_2.sourceImage);
-                    collision_draw = 2;
+                    if (collision_delay >= COLLISION_DELAY_COUNT)
+                    {
+                        collision_draw = 2;
+                        collision_delay = 0;
+                    }
                     break;
                 case 2:
                     ship_collission_3.x=ship_character.x;
                     ship_collission_3.y=ship_character.y;
                     ship_collission_3.drawShip(canvas,ship_collission_3.sourceImage);
-                    collision_draw = 3;
+                    if (collision_delay >= COLLISION_DELAY_COUNT)
+                    {
+                        collision_draw = 3;
+                        collision_delay = 0;
+                    }
                     break;
                 case 3:
                     ship_collission_4.x=ship_character.x;
                     ship_collission_4.y=ship_character.y;
                     ship_collission_4.drawShip(canvas,ship_collission_4.sourceImage);
-                    collision_draw = 4;
+                    if (collision_delay >= COLLISION_DELAY_COUNT)
+                    {
+                        collision_draw = 4;
+                        collision_delay = 0;
+                    }
                     break;
                 case 4:
                     ship_collission_5.x=ship_character.x;
                     ship_collission_5.y=ship_character.y;
                     ship_collission_5.drawShip(canvas,ship_collission_5.sourceImage);
-                    collision_draw = 5;
+                    if (collision_delay >= COLLISION_DELAY_COUNT)
+                    {
+                        collision_draw = 5;
+                        collision_delay = 0;
+                    }
                     break;
                 case 5:
                     ship_character.drawShip(canvas, ship_character.sourceImage);
@@ -308,35 +347,3 @@ public class GameView extends SurfaceView
     }
 }
 
-class star_formation
-{
-    public int x;
-    public int y;
-    public boolean display_star;
-    Random myRand;
-
-    public star_formation()
-    {
-        myRand = new Random();
-        display_star = false;
-    }
-
-    public void initialise_star(Canvas c)
-    {
-        y = 0;
-        x = myRand.nextInt(c.getWidth());
-    }
-
-    public void update_star()
-    {
-        y=y+80;
-    }
-
-    public void check_star(Canvas c)
-    {
-        if (y>c.getHeight())
-        {
-            display_star = false;
-        }
-    }
-}

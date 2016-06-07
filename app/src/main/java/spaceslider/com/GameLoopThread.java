@@ -9,8 +9,8 @@ public class GameLoopThread extends Thread
 {
     private static final long FPS = 20;
     private static final int COLLISION_DELAY = 20;
-    private static int ROCK_SPEED = 5;
-    private static int NUMBER_OF_STARS_PER_LINE = 10;
+    private static int ROCK_SPEED = 10;
+    private static int NUMBER_OF_STARS_PER_LINE = 6;
     private static int CurrentRockXPosition = 800;
     private GameView view;
     private boolean running = false;
@@ -18,13 +18,17 @@ public class GameLoopThread extends Thread
     private int collission_counter = 50;
     private Random rnd;
     private int counted_spaces_between_rocks = 0;
+    private int counter_spaces_between_stars = 0;
 
     /* Stage information */
     private int rocks_per_line = 2;
     private int spaces_between_rocks = 5;
+    private int spaces_between_stars = 5;
     private int rock_speed = 0;
     /* Star counter */
     private int star_counter;
+
+    private Canvas TheCanvas;
 
     public GameLoopThread(GameView view)
     {
@@ -49,19 +53,37 @@ public class GameLoopThread extends Thread
         return collission;
     }
 
+    public Canvas getCanvas()
+    {
+        return TheCanvas;
+    }
+
     private void star_control(Canvas c)
     {
         int star_idx;
-        for (star_idx = 0; star_idx < view.NUMBER_OF_STARS; star_idx++)
+        if (counter_spaces_between_stars == 0)
         {
-            star_counter++;
-            if (star_counter<NUMBER_OF_STARS_PER_LINE) {
-                view.stars[star_idx].display_star = true;
+            for (star_idx = 0; star_idx < view.NUMBER_OF_STARS; star_idx++)
+            {
+                if ((star_counter < NUMBER_OF_STARS_PER_LINE) && (!view.stars[star_idx].display_star))
+                {
+                    star_counter++;
+                    view.stars[star_idx].display_star = true;
+                    view.stars[star_idx].initialise_star(c);
+                }
+                if (view.stars[star_idx].display_star == true)
+                {
+                    view.stars[star_idx].update_star();
+                    view.stars[star_idx].check_star(c);
+                }
             }
-            view.stars[star_idx].update_star();
-            view.stars[star_idx].check_star(c);
+            star_counter = 0;
         }
-        star_counter = 0;
+        counter_spaces_between_stars++;
+        if (counter_spaces_between_stars >= spaces_between_stars)
+        {
+            counter_spaces_between_stars = 0;
+        }
     }
 
     private void rock_control(Canvas c)
@@ -76,11 +98,12 @@ public class GameLoopThread extends Thread
             /* Initialise all the rocks to their first positions */
             for (rock_idx = 0; rock_idx < view.NUMBER_OF_ROCKS; rock_idx++)
             {
+                /* Hurl the rocks at a specific rate */
                 if (view.rockarray[rock_idx].DrawState == false)
                 {
                     view.rockarray[rock_idx].x = CurrentRockXPosition;
                     view.rockarray[rock_idx].DrawState = true;
-                    CurrentRockXPosition = rnd.nextInt(useable_screen_width-600)+300;
+                    CurrentRockXPosition = rnd.nextInt(useable_screen_width-600-view.rockarray[rock_idx].width)+300;
                     counted_rocks_per_line++;
                     if (counted_rocks_per_line >= rocks_per_line)
                     {
@@ -88,6 +111,18 @@ public class GameLoopThread extends Thread
                     }
                 }
             }
+        }
+        for (rock_idx = 0; rock_idx < view.NUMBER_OF_ROCKS; rock_idx++)
+        {
+            /* Update the score and reset rocks to the top */
+            if (view.rockarray[rock_idx].y > c.getHeight()) {
+                view.updateScore(1);
+                view.rockarray[rock_idx].DrawState = false;
+                view.rockarray[rock_idx].y = 0;
+                view.rockarray[rock_idx].current_line = 0;
+            }
+            /* Run the rocks */
+            view.rockarray[rock_idx].updateRock(c);
         }
         counted_spaces_between_rocks++;
         if (counted_spaces_between_rocks >= spaces_between_rocks)
@@ -114,24 +149,18 @@ public class GameLoopThread extends Thread
             try
             {
                 c = view.getHolder().lockCanvas();
+                TheCanvas = c;
                 synchronized (view.getHolder())
                 {
+                    /* Handle the rocks for every cycle */
                     rock_speed++;
                     if (rock_speed > (ROCK_SPEED-view.game_level)) {
                         rock_speed = 0;
                         rock_control(c);
-
-                        /* Update all of the characters */
-                        for (rock_idx = 0; rock_idx < view.NUMBER_OF_ROCKS; rock_idx++) {
-                            if (view.rockarray[rock_idx].y > c.getHeight()) {
-                                view.updateScore(1);
-                                view.rockarray[rock_idx].DrawState = false;
-                                view.rockarray[rock_idx].y = 0;
-                                view.rockarray[rock_idx].current_line = 0;
-                            }
-                            view.rockarray[rock_idx].updateRock(c);
-                        }
                     }
+                    /* Handle the stars for every cycle */
+                    star_control(c);
+                    /* Draw everything */
                     view.CharacterDraw(c);
                 }
             }
@@ -147,6 +176,7 @@ public class GameLoopThread extends Thread
             if (collission == false)
             {
                 view.checkCollisions();
+                collission_counter = 50;
             }
             else
             {
@@ -160,6 +190,9 @@ public class GameLoopThread extends Thread
                 if (collission_counter < 0)
                 {
                     collission = false;
+                    if (view.number_of_lives == 0) {
+                        setRunning(false);
+                    }
                 }
             }
 
