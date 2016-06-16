@@ -9,12 +9,12 @@ public class GameLoopThread extends Thread
 {
     private static final long FPS = 20;
     private static final int COLLISION_DELAY = 20;
-    private static int ROCK_SPEED = 10;
     private static int NUMBER_OF_STARS_PER_LINE = 6;
     private static int CurrentRockXPosition = 800;
     private GameView view;
     private boolean running = false;
     private boolean collission = false;
+    private boolean with_supplies = false;
     private int collission_counter = 50;
     private Random rnd;
     private int counted_spaces_between_rocks = 0;
@@ -22,7 +22,7 @@ public class GameLoopThread extends Thread
 
     /* Stage information */
     private int rocks_per_line = 2;
-    private int spaces_between_rocks = 5;
+    private int spaces_between_rocks = 400;
     private int spaces_between_stars = 5;
     private int rock_speed = 0;
     /* Star counter */
@@ -53,6 +53,15 @@ public class GameLoopThread extends Thread
         return collission;
     }
 
+    public void setSupplyCollission(boolean supply_coll)
+    {
+        with_supplies = supply_coll;
+    }
+
+    public boolean getSupplyCollission()
+    {
+        return with_supplies;
+    }
     public Canvas getCanvas()
     {
         return TheCanvas;
@@ -86,7 +95,7 @@ public class GameLoopThread extends Thread
         }
     }
 
-    private void rock_control(Canvas c)
+    private void rock_control(Canvas c,int l_rock_speed)
     {
         int rock_idx;
         int max_lines=c.getHeight()/view.PIXELS_PER_LINE;
@@ -102,7 +111,15 @@ public class GameLoopThread extends Thread
                 if (view.rockarray[rock_idx].DrawState == false)
                 {
                     view.rockarray[rock_idx].x = CurrentRockXPosition;
-                    view.rockarray[rock_idx].DrawState = true;
+                    int is_it_a_supply_item = rnd.nextInt(100);
+                    if((is_it_a_supply_item >40) && (is_it_a_supply_item <60) && (!view.supply_item.DrawState))
+                    {
+                        view.supply_item.DrawState = true;
+                    }
+                    else
+                    {
+                        view.rockarray[rock_idx].DrawState = true;
+                    }
                     CurrentRockXPosition = rnd.nextInt(useable_screen_width-600-view.rockarray[rock_idx].width)+300;
                     counted_rocks_per_line++;
                     if (counted_rocks_per_line >= rocks_per_line)
@@ -122,10 +139,27 @@ public class GameLoopThread extends Thread
                 view.rockarray[rock_idx].current_line = 0;
             }
             /* Run the rocks */
-            view.rockarray[rock_idx].updateRock(c);
+            view.rockarray[rock_idx].updateRock(c,l_rock_speed);
         }
+        /* Update the supply items */
+        if (view.supply_item.y > c.getHeight()) {
+            view.supply_item.DrawState = false;
+            view.supply_item.y = 0;
+            view.supply_item.current_line = 0;
+        }
+        view.supply_item.updateSupply(c,l_rock_speed);
+        if ((view.ship_with_supplies.AtLeftEnd) || (view.ship_with_supplies.AtRightEnd))
+        {
+            if (with_supplies == true)
+            {
+                view.delivered_countdown = view.SUPPLY_DELIVERED_COUNT;
+                view.supplies_retrieved++;
+                with_supplies = false;
+            }
+        }
+        /* Rock spacing */
         counted_spaces_between_rocks++;
-        if (counted_spaces_between_rocks >= spaces_between_rocks)
+        if ((counted_spaces_between_rocks*rock_speed) >= spaces_between_rocks)
         {
             counted_spaces_between_rocks = 0;
         }
@@ -153,11 +187,42 @@ public class GameLoopThread extends Thread
                 synchronized (view.getHolder())
                 {
                     /* Handle the rocks for every cycle */
-                    rock_speed++;
-                    if (rock_speed > (ROCK_SPEED-view.game_level)) {
-                        rock_speed = 0;
-                        rock_control(c);
+                    switch (view.game_level)
+                    {
+                        case 1:
+                            rock_speed = 8;
+                            break;
+                        case 2:
+                            rock_speed = 10;
+                            break;
+                        case 3:
+                            rock_speed = 12;
+                            break;
+                        case 4:
+                            rock_speed = 14;
+                            break;
+                        case 5:
+                            rock_speed = 16;
+                            break;
+                        case 6:
+                            rock_speed = 18;
+                            break;
+                        case 7:
+                            rock_speed = 20;
+                            break;
+                        case 8:
+                            rock_speed = 22;
+                            break;
+                        case 9:
+                            rock_speed = 24;
+                            break;
+                        case 10:
+                            rock_speed = 26;
+                            break;
+                        default:
+                            break;
                     }
+                    rock_control(c,rock_speed);
                     /* Handle the stars for every cycle */
                     star_control(c);
                     /* Draw everything */
@@ -186,6 +251,9 @@ public class GameLoopThread extends Thread
                     view.rockarray[rock_idx].y=0;
                     view.rockarray[rock_idx].current_line = 0;
                 }
+                view.supply_item.DrawState = false;
+                view.supply_item.y=0;
+                view.supply_item.current_line = 0;
                 collission_counter--;
                 if (collission_counter < 0)
                 {
