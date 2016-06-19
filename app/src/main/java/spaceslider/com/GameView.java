@@ -248,6 +248,8 @@ public class GameView extends SurfaceView
 
     protected void CharacterDraw(Canvas canvas)
     {
+        int textSize;
+        int supplyCircleRadius;
         int rock_idx;
         int bottom_of_level_ind;
         canvas.drawColor(Color.BLACK);
@@ -268,43 +270,48 @@ public class GameView extends SurfaceView
                 rockarray[rock_idx].initialise_position(0,((canvas.getWidth()/2)-(spaceship_normal.getWidth()/2)));
             }
         }
-        //Get the control area
-        controlLeftTop = canvas.getHeight()/2;
+        //Get the value for drawing the two controls
         controlLeftLeft = 0;
         controlLeftBottom = canvas.getHeight();
-        controlLeftRight = canvas.getWidth()/5;
-        controlRightTop = canvas.getHeight()/2;
-        controlRightLeft = canvas.getWidth() - (canvas.getWidth()/5);
+        controlLeftRight = canvas.getWidth()/5-(canvas.getHeight()/35);
+        controlRightTop = (canvas.getHeight()/3)*2;
+        controlLeftTop = (canvas.getHeight()/3)*2;
+        controlRightLeft = canvas.getWidth() - (canvas.getWidth()/5) + (canvas.getHeight()/35);
         controlRightBottom = canvas.getHeight();
         controlRightRight = canvas.getWidth();
-        //draw the control rectangles
+        //Set the general text size
+        textSize = canvas.getHeight()/25;
+        //Supply circle radius
+        supplyCircleRadius = canvas.getHeight()/25;
+
+        //Draw the left right arrows based on the values above
         Paint myPaint = new Paint();
         myPaint.setColor(Color.rgb(0, 64, 127));
         myPaint.setStrokeWidth(10);
         canvas.drawRect(0, 0, controlRightRight, canvas.getHeight()/20, myPaint);
         Rect src = new Rect(0, 0, right_arrow.getWidth(), right_arrow.getHeight());
-        Rect dst = new Rect((int)controlRightLeft+(canvas.getHeight()/40), (int)controlRightTop, (int)controlRightRight, (int)controlRightBottom);
+        Rect dst = new Rect((int)controlRightLeft, (int)controlRightTop, (int)controlRightRight, (int)controlRightBottom);
         canvas.drawBitmap(right_arrow,src,dst,null);
         src = new Rect(0, 0, left_arrow.getWidth(), left_arrow.getHeight());
-        dst = new Rect((int)controlLeftLeft, (int)controlLeftTop, (int)controlLeftRight-(canvas.getHeight()/40), (int)controlLeftBottom);
+        dst = new Rect((int)controlLeftLeft, (int)controlLeftTop, (int)controlLeftRight, (int)controlLeftBottom);
         canvas.drawBitmap(left_arrow,src,dst,null);
 
         /* Write the number of lives on the screen*/
         myPaint.setColor(Color.WHITE);
-        myPaint.setTextSize(canvas.getHeight()/25);
+        myPaint.setTextSize(textSize);
         String lives_string = "Ships: "+ Integer.toString(number_of_lives);
-        canvas.drawText(lives_string, canvas.getWidth()-(lives_string.length()*40), canvas.getHeight()/25, myPaint);
+        canvas.drawText(lives_string, canvas.getWidth()-(lives_string.length()*40), textSize, myPaint);
         if (number_of_lives == 0)
         {
             myPaint.setColor(Color.RED);
-            canvas.drawText("Game Over", canvas.getWidth()/2-200, canvas.getHeight()/2, myPaint);
+            canvas.drawText("Game Over", canvas.getWidth()/2-160, canvas.getHeight()/2, myPaint);
         }
 
         /* Write the number of lives on the screen*/
         myPaint.setColor(Color.GREEN);
-        myPaint.setTextSize(canvas.getHeight()/25);
+        myPaint.setTextSize(textSize);
         lives_string = "Score: "+ Integer.toString(score_in_game);
-        canvas.drawText(lives_string, 10, canvas.getHeight()/25, myPaint);
+        canvas.drawText(lives_string, 10, textSize, myPaint);
 
         for (rock_idx=0;rock_idx<NUMBER_OF_STARS;rock_idx++)
         {
@@ -312,7 +319,7 @@ public class GameView extends SurfaceView
             {
             /* Draw the stars*/
                 myPaint.setColor(Color.WHITE);
-                myPaint.setTextSize(canvas.getHeight()/25);
+                myPaint.setTextSize(textSize);
                 lives_string = ".";
                 canvas.drawText(lives_string, stars[rock_idx].x, stars[rock_idx].y, myPaint);
             }
@@ -337,9 +344,9 @@ public class GameView extends SurfaceView
                     myPaint.setColor(Color.RED);
                     myPaint.setStyle(Paint.Style.STROKE);
                 }
-                canvas.drawCircle(canvas.getHeight()/25+(canvas.getHeight()/25*x_2), last_top, canvas.getHeight()/50, myPaint);
+                canvas.drawCircle(supplyCircleRadius+(supplyCircleRadius*x_2*2), last_top, supplyCircleRadius, myPaint);
             }
-            last_top = last_top + canvas.getHeight()/25;
+            last_top = last_top + supplyCircleRadius*2;
         }
 
 
@@ -349,28 +356,29 @@ public class GameView extends SurfaceView
         }
         if ((ship_with_supplies.AtLeftEnd) && (delivered_countdown > 0))
         {
-                /* Supply Acceptor Left */
+            /* Supply Acceptor Left */
             src = new Rect(0, 0, supply_acceptor_pic_with_supplies.getWidth(), supply_acceptor_pic_with_supplies.getHeight());
-            dst = new Rect((int) controlLeftRight - 30, (int) controlLeftBottom - supply_acceptor_pic_with_supplies.getHeight(), (int) controlLeftRight + 40, (int) controlLeftBottom);
+            dst = new Rect((int) controlLeftRight, (int) controlLeftBottom - supply_acceptor_pic_with_supplies.getHeight(), (int) controlLeftRight+(supply_acceptor_pic.getWidth()/2), (int) controlLeftBottom);
             canvas.drawBitmap(supply_acceptor_pic_with_supplies, src, dst, null);
-        } else
+        }
+        else
         {
-                /* Supply Acceptor Left */
+            /* Supply Acceptor Left */
             src = new Rect(0, 0, supply_acceptor_pic.getWidth(), supply_acceptor_pic.getHeight());
-            dst = new Rect((int) controlLeftRight - 30, (int) controlLeftBottom - supply_acceptor_pic.getHeight(), (int) controlLeftRight + 40, (int) controlLeftBottom);
+            dst = new Rect((int) controlLeftRight, (int) controlLeftBottom - supply_acceptor_pic.getHeight(), (int) controlLeftRight+(supply_acceptor_pic.getWidth()/2), (int) controlLeftBottom);
             canvas.drawBitmap(supply_acceptor_pic, src, dst, null);
         }
         if ((ship_with_supplies.AtRightEnd) && (delivered_countdown > 0))
         {
-                /* Supply Acceptor Right */
+            /* Supply Acceptor Right */
             src = new Rect(0, 0, supply_acceptor_pic_with_supplies_right.getWidth(), supply_acceptor_pic_with_supplies_right.getHeight());
-            dst = new Rect((int) controlRightLeft - 40, (int) controlRightBottom - supply_acceptor_pic_with_supplies_right.getHeight(), (int) controlRightLeft + 30, (int) controlRightBottom);
+            dst = new Rect((int) controlRightLeft-(supply_acceptor_pic.getWidth()/2), (int) controlRightBottom - supply_acceptor_pic_with_supplies_right.getHeight(), (int) controlRightLeft, (int) controlRightBottom);
             canvas.drawBitmap(supply_acceptor_pic_with_supplies_right, src, dst, null);
         } else
         {
-                /* Supply Acceptor Right */
+            /* Supply Acceptor Right */
             src = new Rect(0, 0, supply_acceptor_pic_right.getWidth(), supply_acceptor_pic_right.getHeight());
-            dst = new Rect((int) controlRightLeft - 40, (int) controlRightBottom - supply_acceptor_pic_right.getHeight(), (int) controlRightLeft + 30, (int) controlRightBottom);
+            dst = new Rect((int) controlRightLeft-(supply_acceptor_pic.getWidth()/2), (int) controlRightBottom - supply_acceptor_pic_right.getHeight(), (int) controlRightLeft, (int) controlRightBottom);
             canvas.drawBitmap(supply_acceptor_pic_right, src, dst, null);
         }
 
