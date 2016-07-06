@@ -18,9 +18,9 @@ public class star_formation
         x=0;
     }
 
-    public void initialise_star(Canvas c)
+    public void initialise_star(Canvas c, float offsetVal)
     {
-        x = (myRand.nextInt(c.getWidth()-600)+300);
+        x = (myRand.nextInt(c.getWidth()-((int)offsetVal*2))+(int)offsetVal);
     }
 
     public void update_star()

@@ -58,11 +58,12 @@ public class sprite_character
 
     public void updateShip(Canvas canvas,int direction)
     {
+        int ship_increment = canvas.getWidth()/77;
         if (direction == myView.RIGHT)
         {
             if ((x + width) < myView.controlRightLeft)
             {
-                x += 25;
+                x += ship_increment;
                 AtLeftEnd = false;
                 AtRightEnd = false;
             }
@@ -76,7 +77,7 @@ public class sprite_character
         {
             if(x > myView.controlLeftRight)
             {
-                x -= 25;
+                x -= ship_increment;
                 AtLeftEnd = false;
                 AtRightEnd = false;
             }

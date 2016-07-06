@@ -11,6 +11,7 @@ public class GameLoopThread extends Thread
     private static final int COLLISION_DELAY = 20;
     private static int NUMBER_OF_STARS_PER_LINE = 6;
     private static int CurrentRockXPosition = 800;
+    private static int LastCurrentRockXPosition = 800;
     private GameView view;
     private boolean running = false;
     private boolean collission = false;
@@ -78,7 +79,7 @@ public class GameLoopThread extends Thread
                 {
                     star_counter++;
                     view.stars[star_idx].display_star = true;
-                    view.stars[star_idx].initialise_star(c);
+                    view.stars[star_idx].initialise_star(c,view.controlLeftRight);
                 }
                 if (view.stars[star_idx].display_star == true)
                 {
@@ -110,6 +111,11 @@ public class GameLoopThread extends Thread
                 /* Hurl the rocks at a specific rate */
                 if (view.rockarray[rock_idx].DrawState == false)
                 {
+                    /* This makes sure that two rocks or supplies are not on top of each other */
+                    while (Math.abs(CurrentRockXPosition-LastCurrentRockXPosition) < (c.getWidth()/77))
+                    {
+                        CurrentRockXPosition = rnd.nextInt(useable_screen_width-600-view.rockarray[rock_idx].width)+300;
+                    }
                     view.rockarray[rock_idx].x = CurrentRockXPosition;
                     int is_it_a_supply_item = rnd.nextInt(100);
                     if((is_it_a_supply_item >40) && (is_it_a_supply_item <60) && (!view.supply_item.DrawState))
@@ -121,7 +127,9 @@ public class GameLoopThread extends Thread
                         view.rockarray[rock_idx].DrawState = true;
                     }
                     CurrentRockXPosition = rnd.nextInt(useable_screen_width-600-view.rockarray[rock_idx].width)+300;
-                    counted_rocks_per_line++;
+                    /* Store the last position */
+                    LastCurrentRockXPosition = CurrentRockXPosition;
+                            counted_rocks_per_line++;
                     if (counted_rocks_per_line >= rocks_per_line)
                     {
                         break;
