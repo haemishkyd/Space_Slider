@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#010101"
-    android:weightSum="1">
+              android:orientation="vertical" android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#010101"
+              android:weightSum="1"
+              android:foregroundGravity="center_vertical|center_horizontal">
 
     <TextView
         android:layout_width="wrap_content"
@@ -14,6 +15,17 @@
         android:layout_gravity="center_horizontal"
         android:textColor="#79e720" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView2"
+        android:textColor="#73d920"
+        android:foregroundGravity="center_vertical|center_horizontal"
+        android:textSize="20sp"
+        android:textIsSelectable="true"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"/>
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -21,4 +33,29 @@
         android:id="@+id/button"
         android:layout_gravity="center_horizontal"
         android:onClick="gameStartButtonPushed" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView3"
+        android:textColor="#73d920"
+        android:foregroundGravity="center_vertical|center_horizontal"
+        android:textSize="30sp"
+        android:textIsSelectable="true"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:layout_gravity="center_horizontal"
+        android:text="High Scores"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView4"
+        android:textColor="#20d9c6"
+        android:foregroundGravity="center_vertical|center_horizontal"
+        android:textSize="20sp"
+        android:textIsSelectable="false"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:layout_gravity="center_horizontal"/>
 </LinearLayout>

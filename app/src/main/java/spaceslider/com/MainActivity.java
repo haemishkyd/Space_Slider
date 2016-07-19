@@ -10,15 +10,37 @@ import android.graphics.Color;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.widget.EditText;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
+    GameDatabase myDatabase;
     public GameView myGameView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        myDatabase = new GameDatabase(MainActivity.this);
+        myDatabase.getReadableDatabase();
         setContentView(R.layout.startup);
+        populateStartupScreen();
+    }
+
+    public void saveAndExit(View r)
+    {
+        EditText playerName= new EditText(this);
+        playerName = (EditText)findViewById(R.id.editText);
+        myDatabase.addHighScore(playerName.getText().toString(),myGameView.score_in_game);
+        setContentView(R.layout.startup);
+        populateStartupScreen();
+    }
+
+    public void playAgainClicked(View r)
+    {
+        setContentView(R.layout.startup);
+        populateStartupScreen();
     }
 
     public void gameStartButtonPushed(View view)
@@ -29,10 +51,30 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // TODO Auto-generated method stub
         float xval = event.getX();
         float yval = event.getY();
-        myGameView.setControlAction(xval,yval);
+        if (myGameView.GameEndFlag)
+        {
+            myGameView.setVisibility(View.GONE);
+            setContentView(R.layout.endgame);
+            TextView t=new TextView(this);
+            t=(TextView)findViewById(R.id.textView5);
+            t.setText(Integer.toString(myGameView.score_in_game));
+        }
+        else
+        {
+            myGameView.setControlAction(xval, yval);
+        }
         return super.onTouchEvent(event);
+    }
+
+    private void populateStartupScreen()
+    {
+        TextView t=new TextView(this);
+        t=(TextView)findViewById(R.id.textView2);
+        t.setText(R.string.blurb);
+        TextView t2=new TextView(this);
+        t2=(TextView)findViewById(R.id.textView4);
+        t2.setText(myDatabase.getHighScore());
     }
 }

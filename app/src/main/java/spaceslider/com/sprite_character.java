@@ -28,7 +28,6 @@ public class sprite_character
 
     public sprite_character(GameView passedView, boolean draw_state, Bitmap passedPic)
     {
-        int temp_value;
         startX = 0;
         startY = 0;
         width = passedPic.getWidth();
@@ -47,18 +46,21 @@ public class sprite_character
         DrawState = draw_state;
 
         myView = passedView;
-
     }
 
     public void initialise_position(int initaly, int initalx)
     {
-        x=initalx;
+        if (initaly != 0)
+        {
+            //this is not a rock so initiliase the x value (ships)
+            x = initalx;
+        }
         y=initaly;
     }
 
-    public void updateShip(Canvas canvas,int direction)
+    public void updateShip(int canvasWidth,int direction)
     {
-        int ship_increment = canvas.getWidth()/77;
+        int ship_increment = canvasWidth/77;
         if (direction == myView.RIGHT)
         {
             if ((x + width) < myView.controlRightLeft)

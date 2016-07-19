@@ -29,7 +29,7 @@ public class GameLoopThread extends Thread
     /* Star counter */
     private int star_counter;
 
-    private Canvas TheCanvas;
+    private int TheCanvasWidth;
 
     public GameLoopThread(GameView view)
     {
@@ -63,9 +63,10 @@ public class GameLoopThread extends Thread
     {
         return with_supplies;
     }
-    public Canvas getCanvas()
+
+    public int getCanvasWidth()
     {
-        return TheCanvas;
+        return TheCanvasWidth;
     }
 
     private void star_control(Canvas c)
@@ -112,24 +113,27 @@ public class GameLoopThread extends Thread
                 if (view.rockarray[rock_idx].DrawState == false)
                 {
                     /* This makes sure that two rocks or supplies are not on top of each other */
-                    while (Math.abs(CurrentRockXPosition-LastCurrentRockXPosition) < (c.getWidth()/77))
+                    while ((Math.abs(CurrentRockXPosition-LastCurrentRockXPosition) < (useable_screen_width/20)) || (CurrentRockXPosition == 0))
                     {
                         CurrentRockXPosition = rnd.nextInt(useable_screen_width-600-view.rockarray[rock_idx].width)+300;
                     }
-                    view.rockarray[rock_idx].x = CurrentRockXPosition;
+
                     int is_it_a_supply_item = rnd.nextInt(100);
                     if((is_it_a_supply_item >40) && (is_it_a_supply_item <60) && (!view.supply_item.DrawState))
                     {
                         view.supply_item.DrawState = true;
+                        view.supply_item.x = CurrentRockXPosition;
                     }
                     else
                     {
                         view.rockarray[rock_idx].DrawState = true;
+                        view.rockarray[rock_idx].x = CurrentRockXPosition;
                     }
-                    CurrentRockXPosition = rnd.nextInt(useable_screen_width-600-view.rockarray[rock_idx].width)+300;
                     /* Store the last position */
                     LastCurrentRockXPosition = CurrentRockXPosition;
-                            counted_rocks_per_line++;
+                    CurrentRockXPosition = rnd.nextInt(useable_screen_width-600-view.rockarray[rock_idx].width)+300;
+
+                    counted_rocks_per_line++;
                     if (counted_rocks_per_line >= rocks_per_line)
                     {
                         break;
@@ -191,7 +195,7 @@ public class GameLoopThread extends Thread
             try
             {
                 c = view.getHolder().lockCanvas();
-                TheCanvas = c;
+                TheCanvasWidth = c.getWidth();
                 synchronized (view.getHolder())
                 {
                     /* Handle the rocks for every cycle */
@@ -259,6 +263,7 @@ public class GameLoopThread extends Thread
                     view.rockarray[rock_idx].y=0;
                     view.rockarray[rock_idx].current_line = 0;
                 }
+                with_supplies = false;
                 view.supply_item.DrawState = false;
                 view.supply_item.y=0;
                 view.supply_item.current_line = 0;
@@ -290,6 +295,7 @@ public class GameLoopThread extends Thread
             c = view.getHolder().lockCanvas();
             synchronized (view.getHolder())
             {
+                view.GameEndFlag = true;
                 view.CharacterDraw(c);
             }
         }

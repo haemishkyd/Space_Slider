@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
+import android.view.View;
 
 import java.util.Random;
 
@@ -65,6 +66,7 @@ public class GameView extends SurfaceView
     public sprite_character ship_with_supplies;
     public boolean initial_positions_set = false;
 
+    public boolean GameEndFlag=false;
     /* Game parameters */
     public  int   number_of_lives = 3;
     public  int   score_in_game = 0;
@@ -81,11 +83,15 @@ public class GameView extends SurfaceView
     public static final int RIGHT = 223;
     public static final int LEFT = 189;
 
+    MainActivity localActivity;
     public GameView(Context context)
     {
         super(context);
         int rock_idx;
         Canvas c = null;
+
+        localActivity = (MainActivity)context;
+
 
         //Create game loop and game characters
         gameLoopThread = new GameLoopThread(this);
@@ -107,7 +113,6 @@ public class GameView extends SurfaceView
         supply_acceptor_pic_right = BitmapFactory.decodeResource(getResources(),R.drawable.supply_acceptor_right);
         supply_acceptor_pic_with_supplies = BitmapFactory.decodeResource(getResources(),R.drawable.supply_acceptor_with_supplies);
         supply_acceptor_pic_with_supplies_right = BitmapFactory.decodeResource(getResources(),R.drawable.supply_acceptor_with_supplies_right);
-
 
         ship_character = new sprite_character(this,true,spaceship_normal);
         ship_collission_1 = new sprite_character(this,true,spaceship_col_1);
@@ -226,23 +231,23 @@ public class GameView extends SurfaceView
     {
         if ((xtouch > controlLeftLeft) && (xtouch < controlLeftRight))
         {
-            ship_character.updateShip(gameLoopThread.getCanvas(),LEFT);
-            ship_collission_1.updateShip(gameLoopThread.getCanvas(),LEFT);
-            ship_collission_2.updateShip(gameLoopThread.getCanvas(),LEFT);
-            ship_collission_3.updateShip(gameLoopThread.getCanvas(),LEFT);
-            ship_collission_4.updateShip(gameLoopThread.getCanvas(),LEFT);
-            ship_collission_5.updateShip(gameLoopThread.getCanvas(),LEFT);
-            ship_with_supplies.updateShip(gameLoopThread.getCanvas(),LEFT);
+            ship_character.updateShip(gameLoopThread.getCanvasWidth(),LEFT);
+            ship_collission_1.updateShip(gameLoopThread.getCanvasWidth(),LEFT);
+            ship_collission_2.updateShip(gameLoopThread.getCanvasWidth(),LEFT);
+            ship_collission_3.updateShip(gameLoopThread.getCanvasWidth(),LEFT);
+            ship_collission_4.updateShip(gameLoopThread.getCanvasWidth(),LEFT);
+            ship_collission_5.updateShip(gameLoopThread.getCanvasWidth(),LEFT);
+            ship_with_supplies.updateShip(gameLoopThread.getCanvasWidth(),LEFT);
         }
         if ((xtouch > controlRightLeft) && (xtouch < controlRightRight))
         {
-            ship_character.updateShip(gameLoopThread.getCanvas(),RIGHT);
-            ship_collission_1.updateShip(gameLoopThread.getCanvas(),RIGHT);
-            ship_collission_2.updateShip(gameLoopThread.getCanvas(),RIGHT);
-            ship_collission_3.updateShip(gameLoopThread.getCanvas(),RIGHT);
-            ship_collission_4.updateShip(gameLoopThread.getCanvas(),RIGHT);
-            ship_collission_5.updateShip(gameLoopThread.getCanvas(),RIGHT);
-            ship_with_supplies.updateShip(gameLoopThread.getCanvas(),RIGHT);
+            ship_character.updateShip(gameLoopThread.getCanvasWidth(),RIGHT);
+            ship_collission_1.updateShip(gameLoopThread.getCanvasWidth(),RIGHT);
+            ship_collission_2.updateShip(gameLoopThread.getCanvasWidth(),RIGHT);
+            ship_collission_3.updateShip(gameLoopThread.getCanvasWidth(),RIGHT);
+            ship_collission_4.updateShip(gameLoopThread.getCanvasWidth(),RIGHT);
+            ship_collission_5.updateShip(gameLoopThread.getCanvasWidth(),RIGHT);
+            ship_with_supplies.updateShip(gameLoopThread.getCanvasWidth(),RIGHT);
         }
     }
 
@@ -305,6 +310,10 @@ public class GameView extends SurfaceView
         {
             myPaint.setColor(Color.RED);
             canvas.drawText("Game Over", canvas.getWidth()/2-160, canvas.getHeight()/2, myPaint);
+            if (GameEndFlag == true)
+            {
+                canvas.drawText("Touch the screen to continue!", canvas.getWidth()/2-320, canvas.getHeight()/2+canvas.getHeight()/20, myPaint);
+            }
         }
 
         /* Write the number of lives on the screen*/
