@@ -15,7 +15,6 @@ public class GameLoopThread extends Thread
     private GameView view;
     private boolean running = false;
     private boolean collission = false;
-    private boolean with_supplies = false;
     private int collission_counter = 50;
     private Random rnd;
     private int counted_spaces_between_rocks = 0;
@@ -54,14 +53,14 @@ public class GameLoopThread extends Thread
         return collission;
     }
 
-    public void setSupplyCollission(boolean supply_coll)
+    public void setSupplyCollission(boolean supply_coll,ship_character local_ship_char,int type)
     {
-        with_supplies = supply_coll;
+        local_ship_char.WithSuppliesState = type;
     }
 
-    public boolean getSupplyCollission()
+    public int getSupplyCollission(ship_character local_ship_char)
     {
-        return with_supplies;
+        return local_ship_char.WithSuppliesState;
     }
 
     public int getCanvasWidth()
@@ -97,42 +96,52 @@ public class GameLoopThread extends Thread
         }
     }
 
-    private void rock_control(Canvas c,int l_rock_speed)
+    private void obstacle_control(Canvas c,int l_rock_speed)
     {
         int rock_idx;
+        int supply_idx;
         int max_lines=c.getHeight()/view.PIXELS_PER_LINE;
         int counted_rocks_per_line = 0;
         int useable_screen_width = c.getWidth();
 
+        /* New Rocks *********************************************************************************************************************/
         if (counted_spaces_between_rocks == 0)
         {
             /* Initialise all the rocks to their first positions */
             for (rock_idx = 0; rock_idx < view.NUMBER_OF_ROCKS; rock_idx++)
             {
-                /* Hurl the rocks at a specific rate */
+                /* Initialise new rocks if required */
                 if (view.rockarray[rock_idx].DrawState == false)
                 {
-                    /* This makes sure that two rocks or supplies are not on top of each other */
+                    /* This makes sure that two rocks or supplies are not on top of each other ********************************************/
                     while ((Math.abs(CurrentRockXPosition-LastCurrentRockXPosition) < (useable_screen_width/20)) || (CurrentRockXPosition == 0))
                     {
                         CurrentRockXPosition = rnd.nextInt(useable_screen_width-600-view.rockarray[rock_idx].width)+300;
                     }
 
+                    /* Now decide what we want the next obstacle to be ********************************************************************/
                     int is_it_a_supply_item = rnd.nextInt(100);
-                    if((is_it_a_supply_item >40) && (is_it_a_supply_item <60) && (!view.supply_item.DrawState))
+                    if((is_it_a_supply_item >47) && (is_it_a_supply_item <53) && (!view.supply_item_array[1].DrawState))
                     {
-                        view.supply_item.DrawState = true;
-                        view.supply_item.x = CurrentRockXPosition;
+                        view.supply_item_array[1].DrawState = true;
+                        view.supply_item_array[1].x = CurrentRockXPosition;
+                    }
+                    else if((is_it_a_supply_item >30) && (is_it_a_supply_item <70) && (!view.supply_item_array[0].DrawState))
+                    {
+                        view.supply_item_array[0].DrawState = true;
+                        view.supply_item_array[0].x = CurrentRockXPosition;
                     }
                     else
                     {
                         view.rockarray[rock_idx].DrawState = true;
                         view.rockarray[rock_idx].x = CurrentRockXPosition;
                     }
-                    /* Store the last position */
+
+                    /* Store the last position **********************************************************************************************/
                     LastCurrentRockXPosition = CurrentRockXPosition;
                     CurrentRockXPosition = rnd.nextInt(useable_screen_width-600-view.rockarray[rock_idx].width)+300;
 
+                    /* Make sure we only have the requisite rocks every cycle ***************************************************************/
                     counted_rocks_per_line++;
                     if (counted_rocks_per_line >= rocks_per_line)
                     {
@@ -141,6 +150,7 @@ public class GameLoopThread extends Thread
                 }
             }
         }
+        /* New Rocks Done now what **********************************************************************************************************/
         for (rock_idx = 0; rock_idx < view.NUMBER_OF_ROCKS; rock_idx++)
         {
             /* Update the score and reset rocks to the top */
@@ -153,21 +163,41 @@ public class GameLoopThread extends Thread
             /* Run the rocks */
             view.rockarray[rock_idx].updateRock(c,l_rock_speed);
         }
-        /* Update the supply items */
-        if (view.supply_item.y > c.getHeight()) {
-            view.supply_item.DrawState = false;
-            view.supply_item.y = 0;
-            view.supply_item.current_line = 0;
-        }
-        view.supply_item.updateSupply(c,l_rock_speed);
-        if ((view.ship_with_supplies.AtLeftEnd) || (view.ship_with_supplies.AtRightEnd))
+        for (supply_idx = 0; supply_idx < view.NUMBER_OF_SUPPLIES; supply_idx++)
         {
-            if (with_supplies == true)
+        /* Update the supply items */
+            if (view.supply_item_array[supply_idx].y > c.getHeight())
+            {
+                view.supply_item_array[supply_idx].DrawState = false;
+                view.supply_item_array[supply_idx].y = 0;
+                view.supply_item_array[supply_idx].current_line = 0;
+            }
+
+            view.supply_item_array[supply_idx].updateSupply(c, l_rock_speed);
+        }
+
+        if ((view.ship_character.AtLeftEnd) || (view.ship_character.AtRightEnd))
+        {
+            if (view.ship_character.WithSuppliesState == supply_character.NORMAL)
             {
                 view.delivered_countdown = view.SUPPLY_DELIVERED_COUNT;
+                view.updateScore(5);
                 view.supplies_retrieved++;
-                with_supplies = false;
+                view.ship_character.WithSuppliesState = supply_character.NONE;
             }
+            if (view.ship_character.WithSuppliesState == supply_character.ACCUM)
+            {
+                view.delivered_countdown = view.SUPPLY_DELIVERED_COUNT;
+                view.updateScore(10);
+                view.acc_supplies_retrieved++;
+                view.ship_character.WithSuppliesState = supply_character.NONE;
+            }
+            if (view.supplies_retrieved >= 6)
+            {
+                view.supplies_retrieved = 0;
+                view.acc_supplies_retrieved++;
+            }
+
         }
         /* Rock spacing */
         counted_spaces_between_rocks++;
@@ -175,6 +205,79 @@ public class GameLoopThread extends Thread
         {
             counted_spaces_between_rocks = 0;
         }
+    }
+
+    private int calcRockSpeed(int game_level)
+    {
+        int temp_rock_speed = 8;
+
+        switch (game_level)
+        {
+            case 1:
+                temp_rock_speed = 8;
+                break;
+            case 2:
+                temp_rock_speed = 9;
+                break;
+            case 3:
+                temp_rock_speed = 10;
+                break;
+            case 4:
+                temp_rock_speed = 11;
+                break;
+            case 5:
+                temp_rock_speed = 12;
+                break;
+            case 6:
+                temp_rock_speed = 13;
+                break;
+            case 7:
+                temp_rock_speed = 14;
+                break;
+            case 8:
+                temp_rock_speed = 15;
+                break;
+            case 9:
+                temp_rock_speed = 16;
+                break;
+            case 10:
+                temp_rock_speed = 17;
+                break;
+            case 11:
+                temp_rock_speed = 18;
+                break;
+            case 12:
+                temp_rock_speed = 19;
+                break;
+            case 13:
+                temp_rock_speed = 19;
+                break;
+            case 14:
+                temp_rock_speed = 20;
+                break;
+            case 15:
+                temp_rock_speed = 20;
+                break;
+            case 16:
+                temp_rock_speed = 21;
+                break;
+            case 17:
+                temp_rock_speed = 22;
+                break;
+            case 18:
+                temp_rock_speed = 17;
+                break;
+            case 19:
+                temp_rock_speed = 17;
+                break;
+            case 20:
+                temp_rock_speed = 17;
+                break;
+            default:
+                break;
+        }
+
+        return temp_rock_speed;
     }
 
     @Override
@@ -185,7 +288,7 @@ public class GameLoopThread extends Thread
         long sleepTime;
         Canvas c = null;
         int rock_idx;
-        int line_idx;
+        int supply_idx;
 
         while (running)
         {
@@ -198,43 +301,10 @@ public class GameLoopThread extends Thread
                 TheCanvasWidth = c.getWidth();
                 synchronized (view.getHolder())
                 {
-                    /* Handle the rocks for every cycle */
-                    switch (view.game_level)
-                    {
-                        case 1:
-                            rock_speed = 8;
-                            break;
-                        case 2:
-                            rock_speed = 10;
-                            break;
-                        case 3:
-                            rock_speed = 12;
-                            break;
-                        case 4:
-                            rock_speed = 14;
-                            break;
-                        case 5:
-                            rock_speed = 16;
-                            break;
-                        case 6:
-                            rock_speed = 18;
-                            break;
-                        case 7:
-                            rock_speed = 20;
-                            break;
-                        case 8:
-                            rock_speed = 22;
-                            break;
-                        case 9:
-                            rock_speed = 24;
-                            break;
-                        case 10:
-                            rock_speed = 26;
-                            break;
-                        default:
-                            break;
-                    }
-                    rock_control(c,rock_speed);
+                    /* Get the rock speed */
+                    rock_speed = calcRockSpeed(view.game_level);
+                    /* Handle the obstacles for every cycle */
+                    obstacle_control(c,rock_speed);
                     /* Handle the stars for every cycle */
                     star_control(c);
                     /* Draw everything */
@@ -263,10 +333,15 @@ public class GameLoopThread extends Thread
                     view.rockarray[rock_idx].y=0;
                     view.rockarray[rock_idx].current_line = 0;
                 }
-                with_supplies = false;
-                view.supply_item.DrawState = false;
-                view.supply_item.y=0;
-                view.supply_item.current_line = 0;
+                for (supply_idx=0;supply_idx<view.NUMBER_OF_SUPPLIES;supply_idx++)
+                {
+                    view.supply_item_array[supply_idx].DrawState = false;
+                    view.supply_item_array[supply_idx].y = 0;
+                    view.supply_item_array[supply_idx].current_line = 0;
+                }
+//                with_supplies = false;
+//                with_acc_supplies = false;
+                view.ship_character.WithSuppliesState = supply_character.NONE;
                 collission_counter--;
                 if (collission_counter < 0)
                 {
@@ -292,11 +367,14 @@ public class GameLoopThread extends Thread
         /* Do a final canvas draw on exit */
         try
         {
-            c = view.getHolder().lockCanvas();
-            synchronized (view.getHolder())
+            if (view.getHolder()!=null)
             {
-                view.GameEndFlag = true;
-                view.CharacterDraw(c);
+                c = view.getHolder().lockCanvas();
+                synchronized (view.getHolder())
+                {
+                    view.GameEndFlag = true;
+                    view.CharacterDraw(c);
+                }
             }
         }
         finally

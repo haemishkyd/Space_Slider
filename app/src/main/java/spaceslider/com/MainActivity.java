@@ -7,11 +7,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -50,6 +52,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        myGameView.KillGame();
+        MainActivity.this.finish();
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         float xval = event.getX();
         float yval = event.getY();
@@ -63,7 +71,13 @@ public class MainActivity extends AppCompatActivity {
         }
         else
         {
-            myGameView.setControlAction(xval, yval);
+            if(event.getAction()==MotionEvent.ACTION_DOWN){
+                myGameView.setControlAction(xval, yval, MotionEvent.ACTION_DOWN);
+            }
+            else if(event.getAction()==MotionEvent.ACTION_UP){
+                myGameView.setControlAction(xval, yval, MotionEvent.ACTION_UP);
+            }
+
         }
         return super.onTouchEvent(event);
     }

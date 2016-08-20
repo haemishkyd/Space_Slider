@@ -18,35 +18,14 @@ public class sprite_character
     public int width;
     public int height;
 
+    public int OldRockSpeed = 0;
+    public int OldSupplySpeed = 0;
     /* End stops */
     public boolean AtLeftEnd = false;
     public boolean AtRightEnd = false;
     int startX;
     int startY;
     GameView myView;
-    int [] presetStartX;
-
-    public sprite_character(GameView passedView, boolean draw_state, Bitmap passedPic)
-    {
-        startX = 0;
-        startY = 0;
-        width = passedPic.getWidth();
-        height = passedPic.getHeight();
-        presetStartX = new int[7];
-        sourceImage = passedPic;
-
-        presetStartX[0] = 200;
-        presetStartX[1] = 400;
-        presetStartX[2] = 600;
-        presetStartX[3] = 800;
-        presetStartX[4] = 1000;
-        presetStartX[5] = 1200;
-        presetStartX[6] = 1400;
-
-        DrawState = draw_state;
-
-        myView = passedView;
-    }
 
     public void initialise_position(int initaly, int initalx)
     {
@@ -56,63 +35,6 @@ public class sprite_character
             x = initalx;
         }
         y=initaly;
-    }
-
-    public void updateShip(int canvasWidth,int direction)
-    {
-        int ship_increment = canvasWidth/77;
-        if (direction == myView.RIGHT)
-        {
-            if ((x + width) < myView.controlRightLeft)
-            {
-                x += ship_increment;
-                AtLeftEnd = false;
-                AtRightEnd = false;
-            }
-            else
-            {
-                AtRightEnd = true;
-            }
-        }
-
-        if (direction == myView.LEFT)
-        {
-            if(x > myView.controlLeftRight)
-            {
-                x -= ship_increment;
-                AtLeftEnd = false;
-                AtRightEnd = false;
-            }
-            else
-            {
-                AtLeftEnd = true;
-            }
-        }
-    }
-
-    public void resetRock(int position)
-    {
-        y = 0;
-        current_line = 0;
-        x = presetStartX[position];
-    }
-
-    public void updateSupply(Canvas canvas,int l_supply_speed)
-    {
-        if (DrawState == true)
-        {
-            current_line++;
-            y = current_line*l_supply_speed;
-        }
-    }
-
-    public void updateRock(Canvas canvas,int l_rock_speed)
-    {
-        if (DrawState == true)
-        {
-            current_line++;
-            y = current_line*l_rock_speed;
-        }
     }
 
     public void drawSupply(Canvas canvas, Bitmap bmp)

@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Space Slider</string>
     <string name="blurb">A space station in the Nemoscit sector has exploded taking a nearby moon with it. The space station was holding some very valuable canisters.
-    You mission is to retrieve as many of these canisters by navigating the asteroid field left by the exploding moon. Good luck.</string>
+    You mission is to retrieve as many of these canisters by navigating the asteroid field left by the exploding moon. The canisters need to be delivered to the supply
+        ports on the edge of the asteroid field.</string>
 </resources>
