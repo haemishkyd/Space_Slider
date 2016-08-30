@@ -7,12 +7,16 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by haemish on 2016/07/15.
  */
 public class GameDatabase extends SQLiteOpenHelper
 {
     private static final String TEXT_TYPE = " TEXT";
+    private static final String INT_TYPE = " INT";
     private static final String COMMA_SEP = ",";
 
     //Queries
@@ -20,7 +24,7 @@ public class GameDatabase extends SQLiteOpenHelper
             "CREATE TABLE " + HighScore.TABLE_NAME_HIGH_SCORES + " (" +
                     HighScore._ID + " INTEGER PRIMARY KEY," +
                     HighScore.COLUMN_NAME_PLAYER + TEXT_TYPE + COMMA_SEP +
-                    HighScore.COLUMN_NAME_SCORE + TEXT_TYPE + " )";
+                    HighScore.COLUMN_NAME_SCORE + INT_TYPE + " )";
 
     private static final String SQL_DELETE_TABLE =
             "DROP TABLE IF EXISTS " + HighScore.TABLE_NAME_HIGH_SCORES;
@@ -61,15 +65,15 @@ public class GameDatabase extends SQLiteOpenHelper
         SQLiteDatabase db=this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(HighScore.COLUMN_NAME_PLAYER,player);
-        values.put(HighScore.COLUMN_NAME_SCORE,Integer.toString(score));
+        values.put(HighScore.COLUMN_NAME_SCORE,score);
         db.insert(HighScore.TABLE_NAME_HIGH_SCORES,null,values);
         db.close();
     }
 
-    public String getHighScore()
+    public List getHighScore()
     {
-        int counter = 0;
-        String high_score_string = "";
+        List<high_score> myHighScoreArray = new ArrayList<high_score>();
+
         SQLiteDatabase db=this.getReadableDatabase();
         String selectQuery = "SELECT "+HighScore.COLUMN_NAME_PLAYER+","+HighScore.COLUMN_NAME_SCORE+" FROM " + HighScore.TABLE_NAME_HIGH_SCORES + " ORDER BY "+HighScore.COLUMN_NAME_SCORE +" DESC";
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -77,11 +81,13 @@ public class GameDatabase extends SQLiteOpenHelper
         {
             do
             {
-                high_score_string += cursor.getString(0)+"\t"+cursor.getString(1)+"\n\r";
-                counter++;
-            } while ((cursor.moveToNext())&&(counter<5));
+                high_score temp_hs = new high_score();
+                temp_hs.Name = cursor.getString(0);
+                temp_hs.Score  = Integer.toString(cursor.getInt(1));
+                myHighScoreArray.add(temp_hs);
+            } while ((cursor.moveToNext()));
         }
         db.close();
-        return high_score_string;
+        return myHighScoreArray;
     }
 }

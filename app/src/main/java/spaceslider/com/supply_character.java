@@ -10,7 +10,8 @@ public class supply_character extends sprite_character
 {
     public static final int NORMAL = 0;
     public static final int ACCUM = 1;
-    public static final int NONE = 2;
+    public static final int EX_LIVES = 2;
+    public static final int NONE = 3;
 
     public int SupplyType = NORMAL;
 

@@ -1,105 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical" android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="#010101"
-              android:weightSum="1"
-              android:foregroundGravity="center_vertical|center_horizontal"
-              android:gravity="center_vertical">
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:background="#010101"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <TableLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical|center_horizontal">
+    <!--ROW 1*************************************************-->
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Game Over"
+        android:id="@+id/textViewGameOver"
+        android:gravity="center"
+        android:textColor="#fa1003"
+        android:textSize="40sp"
+        />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Game Over"
-                android:id="@+id/textViewGameOver"
-                android:layout_gravity="center_horizontal"
-                android:textColor="#fa1003"
-                android:textSize="40sp"/>
-        </TableRow>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Score:"
+            android:id="@+id/textViewScore"
+            android:textColor="#79e720"
+            android:layout_alignTop="@+id/textViewGameOver"
+            android:layout_weight="0.3"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Score:"
-                android:id="@+id/textViewScore"
-                android:layout_gravity="center_horizontal"
-                android:textColor="#79e720" />
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="0"
+            android:id="@+id/textView5"
+            android:textColor="#79e720"
+            android:layout_weight="0.3"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="0"
-                android:id="@+id/textView5"
-                android:layout_gravity="right"
-                android:textColor="#79e720"/>
-        </TableRow>
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:id="@+id/textView10"
+            android:layout_weight="0.3"/>
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+    </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Name:"
-                android:id="@+id/textView6"
-                android:layout_gravity="center_horizontal"
-                android:textColor="#79e720"/>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
 
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="textPersonName"
-                android:text="Name"
-                android:ems="10"
-                android:id="@+id/editText"
-                android:background="#8d8989"/>
-        </TableRow>
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Name:"
+            android:id="@+id/textView6"
+            android:textColor="#79e720"
+            android:layout_weight="0.3"/>
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        </TableRow>
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:ems="10"
+            android:id="@+id/editText"
+            android:background="#8d8989"
+            android:layout_weight="0.3"/>
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:id="@+id/textView11"
+            android:layout_weight="0.3"/>
+    </LinearLayout>
 
-            <Button
-                android:text="Save"
-                android:id="@+id/button2"
-                android:layout_column="1"
-                android:onClick="saveAndExit"/>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
 
-        </TableRow>
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Restart/Play Again"
+            android:id="@+id/textView9"
+            android:textColor="#79e720"
+            android:layout_weight="0.3"
+            android:gravity="center"/>
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <Button
+            android:layout_width="fill_parent"
+            android:text="Don&apos;t Save and Restart"
+            android:id="@+id/button3"
+            android:onClick="playAgainClicked"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:visibility="invisible"/>
 
-            <Button
-                android:text="Don&apos;t Save"
-                android:id="@+id/button3"
-                android:layout_column="1"
-                android:onClick="playAgainClicked"/>
-        </TableRow>
-    </TableLayout>
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Score"
+            android:id="@+id/textView13"
+            android:textColor="#79e720"
+            android:layout_weight="0.3"
+            android:gravity="center"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageButton"
+            android:scaleType="fitCenter"
+            android:src="@drawable/restart"
+            android:layout_weight="0.3"
+            android:onClick="playAgainClicked"
+            />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text=" Save and Restart"
+            android:id="@+id/button2"
+            android:onClick="saveAndExit"
+            android:layout_weight="0.3"
+            android:visibility="invisible"/>
+
+        <ImageButton
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageButton2"
+            android:scaleType="fitCenter"
+            android:src="@drawable/save"
+            android:layout_weight="0.3"
+            android:onClick="saveAndExit"/>
+    </LinearLayout>
 
 </LinearLayout>

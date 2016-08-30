@@ -31,6 +31,7 @@ public class GameView extends SurfaceView
     private Bitmap left_arrow;
     private Bitmap supply_normal_item_pic;
     private Bitmap supply_accum_item_pic;
+    private Bitmap supply_add_life_item_pic;
     private Bitmap ship_with_supplies_pic;
     private Bitmap ship_with_accum_supplies_pic;
     private Bitmap supply_acceptor_pic;
@@ -40,6 +41,7 @@ public class GameView extends SurfaceView
 
     private SurfaceHolder holder;
     private GameLoopThread gameLoopThread;
+
     public  float controlLeftTop;
     public  float controlLeftLeft;
     public  float controlLeftBottom;
@@ -48,16 +50,29 @@ public class GameView extends SurfaceView
     public  float controlRightLeft;
     public  float controlRightBottom;
     public  float controlRightRight;
+    public  int   supplyCircleRadius;
+    public  int   textSize;
 
-    /* Game characters */
-    public static final int NUMBER_OF_ROCKS = 8;
-    public static final int NUMBER_OF_SUPPLIES = 2;
-    public static final int NUMBER_OF_STARS = 80;
-    public static final int PIXELS_PER_LINE = 80;
+    /* Game constants */
+    public static final int NUMBER_OF_SUPPLIES = 3;
     public static final int LEVEL_UP_SCORE = 20;
     public static final int COLLISION_DELAY_COUNT = 4;
     public static final int SUPPLY_DELAY_COUNT = 100;
     public static final int SUPPLY_DELIVERED_COUNT=50;
+    public static final long FPS = 20;
+    public static final int COLLISION_DELAY = 20;
+    public static final int NUMBER_OF_STARS_PER_LINE = 6;
+    public static final int NUMBER_OF_SUPPLIES_BETWEEN_EXTRA_LIVES = 3;
+    public static final int NUMBER_OF_SUPPLIES_BEFORE_ACCUM = 9;
+    public static final int POSITION_HISTORY_POINTS = 2;
+    public static final int RIGHT = 223;
+    public static final int LEFT = 189;
+    public static final int LEFT_BEING_PUSHED = 1;
+    public static final int RIGHT_BEING_PUSHED = 2;
+    public static final int NOTHING_BEING_PUSHED = 3;
+    /* Game Default Variables */
+    public int GameVar_NUMBER_OF_STARS = 160;
+    public int GameVar_NUMBER_OF_ROCKS = 16;
 
     /* Declare all of the screen objects */
     public rock_character rockarray[];
@@ -78,18 +93,13 @@ public class GameView extends SurfaceView
     private int   collision_delay = 0;
 
     private int   supply_countdown = 0;
-    public  int   delivered_countdown = 0;
+    public  int   left_delivered_countdown = 0;
+    public  int   right_delivered_countdown = 0;
 
     public int   supplies_retrieved = 0;
     public int   acc_supplies_retrieved = 0;
 
-    public static final int RIGHT = 223;
-    public static final int LEFT = 189;
 
-
-    public static final int LEFT_BEING_PUSHED = 1;
-    public static final int RIGHT_BEING_PUSHED = 2;
-    public static final int NOTHING_BEING_PUSHED = 3;
 
     public int currentScreenInput = NOTHING_BEING_PUSHED;
 
@@ -117,6 +127,7 @@ public class GameView extends SurfaceView
 
         supply_normal_item_pic                  = BitmapFactory.decodeResource(getResources(),R.drawable.supplies_normal);
         supply_accum_item_pic                   = BitmapFactory.decodeResource(getResources(),R.drawable.supplies_accum);
+        supply_add_life_item_pic                = BitmapFactory.decodeResource(getResources(),R.drawable.supplies_add_life);
 
         rock_1                                  = BitmapFactory.decodeResource(getResources(),R.drawable.asteroid_01);
         rock_2                                  = BitmapFactory.decodeResource(getResources(),R.drawable.asteroid_02);
@@ -133,13 +144,14 @@ public class GameView extends SurfaceView
         ship_character.setShipImages(spaceship_col_1,spaceship_col_2,spaceship_col_3,spaceship_col_4,spaceship_col_5,ship_with_supplies_pic,ship_with_accum_supplies_pic);
 
         /* Initialise the supplies */
-        supply_item_array = new supply_character[NUMBER_OF_SUPPLIES];
-        supply_item_array[0]  = new supply_character(this,false,supply_normal_item_pic,supply_character.NORMAL);
-        supply_item_array[1]   = new supply_character(this,false,supply_accum_item_pic,supply_character.ACCUM);
+        supply_item_array       = new supply_character[NUMBER_OF_SUPPLIES];
+        supply_item_array[supply_character.NORMAL]    = new supply_character(this,false,supply_normal_item_pic,supply_character.NORMAL);
+        supply_item_array[supply_character.ACCUM]    = new supply_character(this,false,supply_accum_item_pic,supply_character.ACCUM);
+        supply_item_array[supply_character.EX_LIVES]    = new supply_character(this,false,supply_add_life_item_pic,supply_character.EX_LIVES);
 
         /* Initialise the rocks */
-        rockarray = new rock_character[NUMBER_OF_ROCKS];
-        for (rock_idx=0;rock_idx<NUMBER_OF_ROCKS;rock_idx++)
+        rockarray = new rock_character[GameVar_NUMBER_OF_ROCKS];
+        for (rock_idx=0;rock_idx<GameVar_NUMBER_OF_ROCKS;rock_idx++)
         {
             if (rock_idx%2 == 0)
             {
@@ -152,8 +164,8 @@ public class GameView extends SurfaceView
         }
 
         /* Initialise the stars */
-        stars = new star_formation[NUMBER_OF_STARS];
-        for (rock_idx=0;rock_idx<NUMBER_OF_STARS;rock_idx++)
+        stars = new star_formation[GameVar_NUMBER_OF_STARS];
+        for (rock_idx=0;rock_idx<GameVar_NUMBER_OF_STARS;rock_idx++)
         {
             stars[rock_idx] = new star_formation();
         }
@@ -221,7 +233,7 @@ public class GameView extends SurfaceView
         shipy = ship_character.y;
         shipwidth = ship_character.width;
 
-        for (rock_idx=0;rock_idx<NUMBER_OF_ROCKS;rock_idx++)
+        for (rock_idx=0;rock_idx<GameVar_NUMBER_OF_ROCKS;rock_idx++)
         {
             if (((rockarray[rock_idx].x+(rockarray[rock_idx].width*0.9))>shipx) &&  (rockarray[rock_idx].x < (shipx+shipwidth)))
             {
@@ -243,7 +255,14 @@ public class GameView extends SurfaceView
                     supply_item_array[supply_idx].DrawState = false;
                     supply_item_array[supply_idx].y = 0;
                     supply_item_array[supply_idx].current_line = 0;
-                    supply_countdown = SUPPLY_DELAY_COUNT;
+                    if (supply_item_array[supply_idx].SupplyType == supply_character.EX_LIVES)
+                    {
+                        supply_countdown = SUPPLY_DELAY_COUNT/2;
+                    }
+                    else
+                    {
+                        supply_countdown = SUPPLY_DELAY_COUNT;
+                    }
                 }
             }
         }
@@ -273,10 +292,26 @@ public class GameView extends SurfaceView
         gameLoopThread.setRunning(false);
     }
 
+    public void setScreenParameters(Canvas canvas)
+    {
+        //Get the value for drawing the two controls
+        controlLeftLeft = 0;
+        controlLeftBottom = canvas.getHeight();
+        controlLeftRight = canvas.getWidth()/5-(canvas.getHeight()/35);
+        controlRightTop = (canvas.getHeight()/3)*2;
+        controlLeftTop = (canvas.getHeight()/3)*2;
+        controlRightLeft = canvas.getWidth() - (canvas.getWidth()/5) + (canvas.getHeight()/35);
+        controlRightBottom = canvas.getHeight();
+        controlRightRight = canvas.getWidth();
+
+        //Set the general text size
+        textSize = canvas.getHeight()/25;
+        //Supply circle radius
+        supplyCircleRadius = canvas.getHeight()/25;
+    }
+
     protected void CharacterDraw(Canvas canvas)
     {
-        int textSize;
-        int supplyCircleRadius;
         int rock_idx;
         int supply_idx;
         int bottom_of_level_ind;
@@ -287,7 +322,7 @@ public class GameView extends SurfaceView
             initial_positions_set=true;
             ship_character.initialise_position((canvas.getHeight() - spaceship_normal.getHeight()),((canvas.getWidth()/2)-(spaceship_normal.getWidth()/2)));
 
-            for (rock_idx=0;rock_idx<NUMBER_OF_ROCKS;rock_idx++)
+            for (rock_idx=0;rock_idx<GameVar_NUMBER_OF_ROCKS;rock_idx++)
             {
                 rockarray[rock_idx].initialise_position(0,((canvas.getWidth()/2)-(spaceship_normal.getWidth()/2)));
             }
@@ -296,20 +331,6 @@ public class GameView extends SurfaceView
                 supply_item_array[supply_idx].initialise_position(0,((canvas.getWidth()/2)-(spaceship_normal.getWidth()/2)));
             }
         }
-
-        //Get the value for drawing the two controls
-        controlLeftLeft = 0;
-        controlLeftBottom = canvas.getHeight();
-        controlLeftRight = canvas.getWidth()/5-(canvas.getHeight()/35);
-        controlRightTop = (canvas.getHeight()/3)*2;
-        controlLeftTop = (canvas.getHeight()/3)*2;
-        controlRightLeft = canvas.getWidth() - (canvas.getWidth()/5) + (canvas.getHeight()/35);
-        controlRightBottom = canvas.getHeight();
-        controlRightRight = canvas.getWidth();
-        //Set the general text size
-        textSize = canvas.getHeight()/25;
-        //Supply circle radius
-        supplyCircleRadius = canvas.getHeight()/25;
 
         //Draw the left right arrows based on the values above
         Paint myPaint = new Paint();
@@ -323,18 +344,28 @@ public class GameView extends SurfaceView
         dst = new Rect((int)controlLeftLeft, (int)controlLeftTop, (int)controlLeftRight, (int)controlLeftBottom);
         canvas.drawBitmap(left_arrow,src,dst,null);
 
-        /* Write the number of lives on the screen*/
-        myPaint.setColor(Color.WHITE);
-        myPaint.setTextSize(textSize);
-        String lives_string = "Ships: "+ Integer.toString(number_of_lives);
-        canvas.drawText(lives_string, canvas.getWidth()-(lives_string.length()*40), textSize, myPaint);
+        /* Write the number of lives on the screen - draw the ships*/
+        for (int lives_idx=0;lives_idx<number_of_lives;lives_idx++)
+        {
+            int left_pos=(int)(controlRightRight - ((canvas.getHeight() / 20)*(lives_idx+1)));
+            src = new Rect(0, 0, spaceship_normal.getWidth(), spaceship_normal.getHeight());
+            dst = new Rect(left_pos , (int) 0, left_pos+(canvas.getHeight() / 20), (int) canvas.getHeight() / 20);
+            canvas.drawBitmap(spaceship_normal, src, dst, null);
+        }
+
         if (number_of_lives == 0)
         {
+            Rect bounds = new Rect();
             myPaint.setColor(Color.RED);
-            canvas.drawText("Game Over", canvas.getWidth()/2-160, canvas.getHeight()/2, myPaint);
+            myPaint.setTextSize(textSize);
+            String game_over = "Game Over";
+            myPaint.getTextBounds(game_over,0,game_over.length(),bounds);
+            canvas.drawText(game_over, canvas.getWidth()/2-(bounds.width()/2), canvas.getHeight()/2, myPaint);
             if (GameEndFlag == true)
             {
-                canvas.drawText("Touch the screen to continue!", canvas.getWidth()/2-320, canvas.getHeight()/2+canvas.getHeight()/20, myPaint);
+                String continue_touch = "Touch the screen to continue!";
+                myPaint.getTextBounds(continue_touch,0,continue_touch.length(),bounds);
+                canvas.drawText(continue_touch, canvas.getWidth()/2-(bounds.width()/2), canvas.getHeight()/2+canvas.getHeight()/20, myPaint);
             }
         }
 
@@ -349,18 +380,18 @@ public class GameView extends SurfaceView
         /* Write the number of lives on the screen*/
         myPaint.setColor(Color.GREEN);
         myPaint.setTextSize(textSize);
-        lives_string = "Score: "+ Integer.toString(score_in_game);
-        canvas.drawText(lives_string, 10, textSize, myPaint);
+        String score_string = "Score: "+ Integer.toString(score_in_game);
+        canvas.drawText(score_string, 10, textSize, myPaint);
 
-        for (rock_idx=0;rock_idx<NUMBER_OF_STARS;rock_idx++)
+        for (rock_idx=0;rock_idx<GameVar_NUMBER_OF_STARS;rock_idx++)
         {
             if (stars[rock_idx].display_star)
             {
             /* Draw the stars*/
                 myPaint.setColor(Color.WHITE);
                 myPaint.setTextSize(textSize);
-                lives_string = ".";
-                canvas.drawText(lives_string, stars[rock_idx].x, stars[rock_idx].y, myPaint);
+                score_string = ".";
+                canvas.drawText(score_string, stars[rock_idx].x, stars[rock_idx].y, myPaint);
             }
         }
 
@@ -368,9 +399,9 @@ public class GameView extends SurfaceView
         myPaint.setStrokeWidth(2);
         int last_top=canvas.getHeight()/8;
         int draw_filled_in = 0;
-        for (int x_1=2; x_1>0;x_1--)
+        for (int x_1=3; x_1>0;x_1--)
         {
-            for (int x_2=0; x_2<3;x_2++)
+            for (int x_2=0; x_2<(NUMBER_OF_SUPPLIES_BEFORE_ACCUM/3);x_2++)
             {
                 if (draw_filled_in < supplies_retrieved)
                 {
@@ -387,8 +418,9 @@ public class GameView extends SurfaceView
             }
             last_top = last_top + supplyCircleRadius*2;
         }
+
         /* Accumulated supplies */
-        last_top=canvas.getHeight()/8+(3*(supplyCircleRadius*2));
+        last_top=canvas.getHeight()/8+(4*(supplyCircleRadius*2));
         draw_filled_in = 0;
         for (int x_1=3; x_1>0;x_1--)
         {
@@ -411,11 +443,15 @@ public class GameView extends SurfaceView
         }
 
 
-        if (delivered_countdown > 0)
+        if (left_delivered_countdown > 0)
         {
-            delivered_countdown--;
+            left_delivered_countdown--;
         }
-        if ((ship_character.AtLeftEnd) && (delivered_countdown > 0))
+        if (right_delivered_countdown > 0)
+        {
+            right_delivered_countdown--;
+        }
+        if ((ship_character.AtLeftEnd) && (left_delivered_countdown > 0))
         {
             /* Supply Acceptor Left */
             src = new Rect(0, 0, supply_acceptor_pic_with_supplies.getWidth(), supply_acceptor_pic_with_supplies.getHeight());
@@ -428,8 +464,9 @@ public class GameView extends SurfaceView
             src = new Rect(0, 0, supply_acceptor_pic.getWidth(), supply_acceptor_pic.getHeight());
             dst = new Rect((int) controlLeftRight, (int) controlLeftBottom - supply_acceptor_pic.getHeight(), (int) controlLeftRight+(supply_acceptor_pic.getWidth()/2), (int) controlLeftBottom);
             canvas.drawBitmap(supply_acceptor_pic, src, dst, null);
+            left_delivered_countdown = 0;
         }
-        if ((ship_character.AtRightEnd) && (delivered_countdown > 0))
+        if ((ship_character.AtRightEnd) && (right_delivered_countdown > 0))
         {
             /* Supply Acceptor Right */
             src = new Rect(0, 0, supply_acceptor_pic_with_supplies_right.getWidth(), supply_acceptor_pic_with_supplies_right.getHeight());
@@ -441,6 +478,7 @@ public class GameView extends SurfaceView
             src = new Rect(0, 0, supply_acceptor_pic_right.getWidth(), supply_acceptor_pic_right.getHeight());
             dst = new Rect((int) controlRightLeft-(supply_acceptor_pic.getWidth()/2), (int) controlRightBottom - supply_acceptor_pic_right.getHeight(), (int) controlRightLeft, (int) controlRightBottom);
             canvas.drawBitmap(supply_acceptor_pic_right, src, dst, null);
+            right_delivered_countdown = 0;
         }
 
         /* Draw the actual characters */
@@ -459,6 +497,16 @@ public class GameView extends SurfaceView
                     {
                         ship_character.drawShip(canvas, ship_character.sourceImageChange(ship_character.WITH_ACCUM_SUPPLIES));
                     }
+                    else if (gameLoopThread.getSupplyCollission(ship_character) == supply_character.EX_LIVES)
+                    {
+                        Rect bounds = new Rect();
+                        myPaint.setColor(Color.YELLOW);
+                        myPaint.setTextSize(textSize);
+                        String game_over = "Extra Life!!";
+                        myPaint.getTextBounds(game_over,0,game_over.length(),bounds);
+                        canvas.drawText(game_over, canvas.getWidth()/2-(bounds.width()/2), canvas.getHeight()/8, myPaint);
+                        ship_character.drawShip(canvas, ship_character.sourceImageChange(ship_character.NORMAL));
+                    }
                 }
                 else
                 {
@@ -472,7 +520,7 @@ public class GameView extends SurfaceView
                 ship_character.drawShip(canvas, ship_character.sourceImageChange(ship_character.NORMAL));
             }
 
-            for (rock_idx=0;rock_idx<NUMBER_OF_ROCKS;rock_idx++)
+            for (rock_idx=0;rock_idx<GameVar_NUMBER_OF_ROCKS;rock_idx++)
             {
                 if (rockarray[rock_idx].DrawState == true)
                 {
@@ -483,13 +531,17 @@ public class GameView extends SurfaceView
             {
                 if (supply_item_array[supply_idx].DrawState == true)
                 {
-                    if (supply_idx == 0)
+                    if (supply_idx == supply_character.NORMAL)
                     {
                         supply_item_array[supply_idx].drawSupply(canvas, supply_normal_item_pic);
                     }
-                    else
+                    else if (supply_idx == supply_character.ACCUM)
                     {
                         supply_item_array[supply_idx].drawSupply(canvas, supply_accum_item_pic);
+                    }
+                    else if (supply_idx == supply_character.EX_LIVES)
+                    {
+                        supply_item_array[supply_idx].drawSupply(canvas, supply_add_life_item_pic);
                     }
                 }
             }

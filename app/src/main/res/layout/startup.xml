@@ -1,61 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical" android:layout_width="match_parent"
-              android:layout_height="match_parent"
+              android:layout_height="fill_parent"
               android:background="#010101"
               android:weightSum="1"
               android:foregroundGravity="center_vertical|center_horizontal">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Space Slider"
-        android:id="@+id/textView"
-        android:layout_gravity="center_horizontal"
-        android:textColor="#79e720" />
-
-    <TextView
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView2"
-        android:textColor="#73d920"
-        android:foregroundGravity="center_vertical|center_horizontal"
-        android:textSize="20sp"
-        android:textIsSelectable="true"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"/>
+        android:layout_height="fill_parent"
+        android:layout_weight="0.2">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start"
-        android:id="@+id/button"
-        android:layout_gravity="center_horizontal"
-        android:onClick="gameStartButtonPushed" />
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            >
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView3"
-        android:textColor="#73d920"
-        android:foregroundGravity="center_vertical|center_horizontal"
-        android:textSize="30sp"
-        android:textIsSelectable="true"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:layout_gravity="center_horizontal"
-        android:text="High Scores"/>
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Space Slider"
+                android:id="@+id/textView"
+                android:gravity="center_horizontal"
+                android:textColor="#79e720"
+                android:textSize="30sp"
+                android:layout_weight="1.0"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView4"
-        android:textColor="#20d9c6"
-        android:foregroundGravity="center_vertical|center_horizontal"
-        android:textSize="20sp"
-        android:textIsSelectable="false"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:layout_gravity="center_horizontal"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView2"
+                android:textColor="#73d920"
+                android:textSize="20sp"
+                android:layout_weight="1.0"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="New Text"
+                android:id="@+id/textView8"
+                android:textColor="#73d920"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:textStyle="bold|italic"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="0.8">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageView"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/high_score"/>
+    </LinearLayout>
+
 </LinearLayout>

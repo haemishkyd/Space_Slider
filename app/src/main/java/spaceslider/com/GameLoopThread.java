@@ -7,11 +7,11 @@ import java.util.Random;
 
 public class GameLoopThread extends Thread
 {
-    private static final long FPS = 20;
-    private static final int COLLISION_DELAY = 20;
-    private static int NUMBER_OF_STARS_PER_LINE = 6;
-    private static int CurrentRockXPosition = 800;
-    private static int LastCurrentRockXPosition = 800;
+;
+
+    private int CurrentRockXPosition = 800;
+    private int[] LastCurrentRockXPosition;
+    private int PositionIndex = 0;
     private GameView view;
     private boolean running = false;
     private boolean collission = false;
@@ -19,6 +19,7 @@ public class GameLoopThread extends Thread
     private Random rnd;
     private int counted_spaces_between_rocks = 0;
     private int counter_spaces_between_stars = 0;
+    private int counter_between_extra_lives = 0;
 
     /* Stage information */
     private int rocks_per_line = 2;
@@ -28,12 +29,14 @@ public class GameLoopThread extends Thread
     /* Star counter */
     private int star_counter;
 
+
     private int TheCanvasWidth;
 
     public GameLoopThread(GameView view)
     {
         this.view = view;
         rnd = new Random();
+        LastCurrentRockXPosition = new int[GameView.POSITION_HISTORY_POINTS];
     }
 
     public void setRunning(boolean run)
@@ -45,7 +48,7 @@ public class GameLoopThread extends Thread
     public void setCollission(boolean coll)
     {
         collission = coll;
-        collission_counter = COLLISION_DELAY;
+        collission_counter = GameView.COLLISION_DELAY;
     }
 
     public boolean getCollission()
@@ -55,7 +58,15 @@ public class GameLoopThread extends Thread
 
     public void setSupplyCollission(boolean supply_coll,ship_character local_ship_char,int type)
     {
-        local_ship_char.WithSuppliesState = type;
+        if (type == supply_character.EX_LIVES)
+        {
+            local_ship_char.WithSuppliesState = type;
+            view.number_of_lives++;
+        }
+        else
+        {
+            local_ship_char.WithSuppliesState = type;
+        }
     }
 
     public int getSupplyCollission(ship_character local_ship_char)
@@ -73,9 +84,9 @@ public class GameLoopThread extends Thread
         int star_idx;
         if (counter_spaces_between_stars == 0)
         {
-            for (star_idx = 0; star_idx < view.NUMBER_OF_STARS; star_idx++)
+            for (star_idx = 0; star_idx < view.GameVar_NUMBER_OF_STARS; star_idx++)
             {
-                if ((star_counter < NUMBER_OF_STARS_PER_LINE) && (!view.stars[star_idx].display_star))
+                if ((star_counter < GameView.NUMBER_OF_STARS_PER_LINE) && (!view.stars[star_idx].display_star))
                 {
                     star_counter++;
                     view.stars[star_idx].display_star = true;
@@ -96,40 +107,113 @@ public class GameLoopThread extends Thread
         }
     }
 
+    private void calculate_random_position()
+    {
+        int check_pos_idx;
+        int position_state_machine = 0;
+        int lower_bound_of_random_field;
+        int size_of_random_field;
+
+        while (position_state_machine != 3)
+        {
+            switch (position_state_machine)
+            {
+                case 0:
+                    if (view.ship_character.AtLeftEnd)
+                    {
+                        size_of_random_field = (int) view.controlRightRight - ((int) (view.controlLeftRight * 1.2 * 2.0));
+                        /* This concentrates the asteroids on the left side of the field */
+                        size_of_random_field /= 2;
+                        lower_bound_of_random_field = (int) (view.controlLeftRight);
+                    }
+                    else if (view.ship_character.AtRightEnd)
+                    {
+                        size_of_random_field = (int) view.controlRightRight - ((int) (view.controlLeftRight * 1.2 * 2.0));
+                        /* This concentrates the asteroids on the right side of the field */
+                        size_of_random_field /= 2;
+                        lower_bound_of_random_field = (int) (view.controlLeftRight);
+                        lower_bound_of_random_field += size_of_random_field;
+                    }
+                    else
+                    {
+                        size_of_random_field = (int) view.controlRightRight - ((int) (view.controlLeftRight * 1.2 * 2.0));
+                        lower_bound_of_random_field = (int) (view.controlLeftRight);
+                    }
+                    CurrentRockXPosition = rnd.nextInt(size_of_random_field) + lower_bound_of_random_field;
+                    position_state_machine = 1;
+                    break;
+                case 1:
+                    position_state_machine = 2;
+                    for (check_pos_idx = 0; check_pos_idx < GameView.POSITION_HISTORY_POINTS; check_pos_idx++)
+                    {
+                        if ((Math.abs(CurrentRockXPosition - LastCurrentRockXPosition[check_pos_idx]) < (((int) view.controlRightRight) / 20)))
+                        {
+                            position_state_machine = 0;
+                        }
+                    }
+                    break;
+                case 2:
+                    /* Store the last position **********************************************************************************************/
+                    LastCurrentRockXPosition[PositionIndex] = CurrentRockXPosition;
+                    PositionIndex++;
+                    if (PositionIndex >= GameView.POSITION_HISTORY_POINTS)
+                    {
+                        PositionIndex = 0;
+                    }
+                    position_state_machine = 3;
+                    break;
+                case 3:
+                    position_state_machine = 0;
+                    break;
+                default:
+                    position_state_machine = 0;
+                    break;
+            }
+        }
+    }
+
     private void obstacle_control(Canvas c,int l_rock_speed)
     {
         int rock_idx;
         int supply_idx;
-        int max_lines=c.getHeight()/view.PIXELS_PER_LINE;
         int counted_rocks_per_line = 0;
-        int useable_screen_width = c.getWidth();
+        boolean already_had_a_supply=false;
 
         /* New Rocks *********************************************************************************************************************/
         if (counted_spaces_between_rocks == 0)
         {
             /* Initialise all the rocks to their first positions */
-            for (rock_idx = 0; rock_idx < view.NUMBER_OF_ROCKS; rock_idx++)
+            for (rock_idx = 0; rock_idx < view.GameVar_NUMBER_OF_ROCKS; rock_idx++)
             {
                 /* Initialise new rocks if required */
                 if (view.rockarray[rock_idx].DrawState == false)
                 {
-                    /* This makes sure that two rocks or supplies are not on top of each other ********************************************/
-                    while ((Math.abs(CurrentRockXPosition-LastCurrentRockXPosition) < (useable_screen_width/20)) || (CurrentRockXPosition == 0))
-                    {
-                        CurrentRockXPosition = rnd.nextInt(useable_screen_width-600-view.rockarray[rock_idx].width)+300;
-                    }
+                    calculate_random_position();
 
                     /* Now decide what we want the next obstacle to be ********************************************************************/
-                    int is_it_a_supply_item = rnd.nextInt(100);
-                    if((is_it_a_supply_item >47) && (is_it_a_supply_item <53) && (!view.supply_item_array[1].DrawState))
+                    int is_it_a_supply_item = rnd.nextInt(1000);
+                    if((is_it_a_supply_item >480) && (is_it_a_supply_item <520) && (!view.supply_item_array[supply_character.ACCUM].DrawState) && (!already_had_a_supply))
                     {
-                        view.supply_item_array[1].DrawState = true;
-                        view.supply_item_array[1].x = CurrentRockXPosition;
+                        counter_between_extra_lives++;
+                        if (counter_between_extra_lives > GameView.NUMBER_OF_SUPPLIES_BETWEEN_EXTRA_LIVES)
+                        {
+                            view.supply_item_array[supply_character.EX_LIVES].DrawState = true;
+                            view.supply_item_array[supply_character.EX_LIVES].x = CurrentRockXPosition;
+                            counter_between_extra_lives = 0;
+                            already_had_a_supply = true;
+                        }
+                        else
+                        {
+                            view.supply_item_array[supply_character.ACCUM].DrawState = true;
+                            view.supply_item_array[supply_character.ACCUM].x = CurrentRockXPosition;
+                            already_had_a_supply = true;
+                        }
                     }
-                    else if((is_it_a_supply_item >30) && (is_it_a_supply_item <70) && (!view.supply_item_array[0].DrawState))
+                    else if((is_it_a_supply_item >300) && (is_it_a_supply_item <700) && (!view.supply_item_array[0].DrawState) && (!already_had_a_supply))
                     {
-                        view.supply_item_array[0].DrawState = true;
-                        view.supply_item_array[0].x = CurrentRockXPosition;
+                        view.supply_item_array[supply_character.NORMAL].DrawState = true;
+                        view.supply_item_array[supply_character.NORMAL].x = CurrentRockXPosition;
+                        already_had_a_supply = true;
                     }
                     else
                     {
@@ -137,11 +221,16 @@ public class GameLoopThread extends Thread
                         view.rockarray[rock_idx].x = CurrentRockXPosition;
                     }
 
-                    /* Store the last position **********************************************************************************************/
-                    LastCurrentRockXPosition = CurrentRockXPosition;
-                    CurrentRockXPosition = rnd.nextInt(useable_screen_width-600-view.rockarray[rock_idx].width)+300;
-
                     /* Make sure we only have the requisite rocks every cycle ***************************************************************/
+                    /* If the screen is large increase the number of rocks per line */
+                    if (c.getWidth() > 2000)
+                    {
+                        rocks_per_line = 3;
+                    }
+                    else
+                    {
+                        rocks_per_line = 2;
+                    }
                     counted_rocks_per_line++;
                     if (counted_rocks_per_line >= rocks_per_line)
                     {
@@ -151,7 +240,7 @@ public class GameLoopThread extends Thread
             }
         }
         /* New Rocks Done now what **********************************************************************************************************/
-        for (rock_idx = 0; rock_idx < view.NUMBER_OF_ROCKS; rock_idx++)
+        for (rock_idx = 0; rock_idx < view.GameVar_NUMBER_OF_ROCKS; rock_idx++)
         {
             /* Update the score and reset rocks to the top */
             if (view.rockarray[rock_idx].y > c.getHeight()) {
@@ -178,24 +267,34 @@ public class GameLoopThread extends Thread
 
         if ((view.ship_character.AtLeftEnd) || (view.ship_character.AtRightEnd))
         {
-            if (view.ship_character.WithSuppliesState == supply_character.NORMAL)
+            if (view.ship_character.WithSuppliesState != supply_character.NONE)
             {
-                view.delivered_countdown = view.SUPPLY_DELIVERED_COUNT;
-                view.updateScore(5);
-                view.supplies_retrieved++;
-                view.ship_character.WithSuppliesState = supply_character.NONE;
-            }
-            if (view.ship_character.WithSuppliesState == supply_character.ACCUM)
-            {
-                view.delivered_countdown = view.SUPPLY_DELIVERED_COUNT;
-                view.updateScore(10);
-                view.acc_supplies_retrieved++;
-                view.ship_character.WithSuppliesState = supply_character.NONE;
-            }
-            if (view.supplies_retrieved >= 6)
-            {
-                view.supplies_retrieved = 0;
-                view.acc_supplies_retrieved++;
+                if (view.ship_character.AtLeftEnd)
+                {
+                    view.left_delivered_countdown = view.SUPPLY_DELIVERED_COUNT;
+                }
+                if (view.ship_character.AtRightEnd)
+                {
+                    view.right_delivered_countdown = view.SUPPLY_DELIVERED_COUNT;
+                }
+
+                if (view.ship_character.WithSuppliesState == supply_character.NORMAL)
+                {
+                    view.updateScore(5);
+                    view.supplies_retrieved++;
+                    view.ship_character.WithSuppliesState = supply_character.NONE;
+                }
+                if (view.ship_character.WithSuppliesState == supply_character.ACCUM)
+                {
+                    view.updateScore(10);
+                    view.acc_supplies_retrieved++;
+                    view.ship_character.WithSuppliesState = supply_character.NONE;
+                }
+                if (view.supplies_retrieved >= GameView.NUMBER_OF_SUPPLIES_BEFORE_ACCUM)
+                {
+                    view.supplies_retrieved = 0;
+                    view.acc_supplies_retrieved++;
+                }
             }
 
         }
@@ -283,7 +382,7 @@ public class GameLoopThread extends Thread
     @Override
     public void run()
     {
-        long ticksPS = 1000 / FPS;
+        long ticksPS = 1000 / GameView.FPS;
         long startTime;
         long sleepTime;
         Canvas c = null;
@@ -301,6 +400,7 @@ public class GameLoopThread extends Thread
                 TheCanvasWidth = c.getWidth();
                 synchronized (view.getHolder())
                 {
+                    view.setScreenParameters(c);
                     /* Get the rock speed */
                     rock_speed = calcRockSpeed(view.game_level);
                     /* Handle the obstacles for every cycle */
@@ -327,7 +427,7 @@ public class GameLoopThread extends Thread
             }
             else
             {
-                for (rock_idx=0;rock_idx<view.NUMBER_OF_ROCKS;rock_idx++)
+                for (rock_idx=0;rock_idx<view.GameVar_NUMBER_OF_ROCKS;rock_idx++)
                 {
                     view.rockarray[rock_idx].DrawState = false;
                     view.rockarray[rock_idx].y=0;
@@ -339,8 +439,6 @@ public class GameLoopThread extends Thread
                     view.supply_item_array[supply_idx].y = 0;
                     view.supply_item_array[supply_idx].current_line = 0;
                 }
-//                with_supplies = false;
-//                with_acc_supplies = false;
                 view.ship_character.WithSuppliesState = supply_character.NONE;
                 collission_counter--;
                 if (collission_counter < 0)
