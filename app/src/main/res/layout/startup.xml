@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:ads="http://schemas.android.com/apk/res-auto"
               android:orientation="vertical" android:layout_width="match_parent"
               android:layout_height="fill_parent"
               android:background="#010101"
@@ -10,7 +11,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:layout_weight="0.2">
+        android:layout_weight="0.23">
 
         <LinearLayout
             android:orientation="horizontal"
@@ -20,7 +21,7 @@
             >
 
             <TextView
-                android:layout_width="fill_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Space Slider"
                 android:id="@+id/textView"
@@ -38,7 +39,7 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:layout_width="fill_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView2"
                 android:textColor="#73d920"
@@ -66,17 +67,37 @@
     </LinearLayout>
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="fill_parent"
-        android:layout_weight="0.8">
+        android:layout_weight="0.77">
 
-        <ImageView
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/imageView"
-            android:layout_gravity="center_horizontal"
-            android:src="@drawable/high_score"/>
-    </LinearLayout>
+            android:layout_height="fill_parent">
 
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/adView1"
+                android:layout_width="321dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center_horizontal"
+                ads:adSize="BANNER"
+                ads:adUnitId="@string/banner_ad_unit_id">
+            </com.google.android.gms.ads.AdView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_height="fill_parent"
+            android:layout_width="wrap_content">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/imageView"
+                android:src="@drawable/high_score"
+                android:contentDescription=""/>
+        </LinearLayout>
+
+    </LinearLayout>
 </LinearLayout>

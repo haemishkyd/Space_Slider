@@ -17,6 +17,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,6 +38,11 @@ public class MainActivity extends AppCompatActivity {
         myDatabase = new GameDatabase(MainActivity.this);
         myDatabase.getReadableDatabase();
         setContentView(R.layout.startup);
+        /* Set up ad at startup */
+        MobileAds.initialize(getApplicationContext(), "ca-app-pub-3540983236078621/8771466198");
+        AdView mAdView = (AdView) findViewById(R.id.adView1);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
         currentView = 0;
         populateStartupScreen();
     }
@@ -51,6 +60,10 @@ public class MainActivity extends AppCompatActivity {
         {
             myDatabase.addHighScore(playerName.getText().toString(),myGameView.score_in_game);
             setContentView(R.layout.startup);
+            /* Set up ad on this page */
+            AdView mAdView = (AdView) findViewById(R.id.adView1);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
             currentView = 0;
             populateStartupScreen();
         }
@@ -60,6 +73,10 @@ public class MainActivity extends AppCompatActivity {
     public void playAgainClicked(View r)
     {
         setContentView(R.layout.startup);
+        /* Set up ad on this page */
+        AdView mAdView = (AdView) findViewById(R.id.adView1);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
         currentView = 0;
         populateStartupScreen();
     }
@@ -79,6 +96,10 @@ public class MainActivity extends AppCompatActivity {
             myGameView.KillGame();
             GameStarted = false;
             setContentView(R.layout.startup);
+            /* Set up ad on this page */
+            AdView mAdView = (AdView) findViewById(R.id.adView1);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
             currentView = 0;
         }
     }
@@ -99,6 +120,10 @@ public class MainActivity extends AppCompatActivity {
         {
             myGameView.setVisibility(View.GONE);
             setContentView(R.layout.endgame);
+            /* Set up ad on this page */
+            AdView mAdView = (AdView) findViewById(R.id.adView2);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
             currentView = 2;
             TextView t=new TextView(this);
             t=(TextView)findViewById(R.id.textView5);

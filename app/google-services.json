@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "1023619306549",
+    "firebase_url": "https://space-slider.firebaseio.com",
+    "project_id": "space-slider",
+    "storage_bucket": "space-slider.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1023619306549:android:333d66ba70a9c543",
+        "android_client_info": {
+          "package_name": "spaceslider.com"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1023619306549-nqdvpe0staa7fk2vboh2rd7ru9nan1s9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBa0j5H9l2bWl5of6dai525xFbsmlIjcSU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

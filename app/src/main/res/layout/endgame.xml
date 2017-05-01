@@ -4,7 +4,8 @@
     android:layout_width="fill_parent"
     android:background="#010101"
     android:layout_height="fill_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ads="http://schemas.android.com/apk/res-auto">
 
 
     <!--ROW 1*************************************************-->
@@ -149,6 +150,22 @@
             android:src="@drawable/save"
             android:layout_weight="0.3"
             android:onClick="saveAndExit"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_height="wrap_content">
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adView2"
+            android:layout_width="321dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            ads:adSize="BANNER"
+            ads:adUnitId="@string/banner_ad_unit_id">
+        </com.google.android.gms.ads.AdView>
     </LinearLayout>
 
 </LinearLayout>
